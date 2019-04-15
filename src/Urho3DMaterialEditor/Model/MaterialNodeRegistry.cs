@@ -69,11 +69,24 @@ namespace Urho3DMaterialEditor.Model
             Add(new UniformNodeFactory(PinTypes.Float, NodeCategory.Parameter, "DeltaTimePS"));
             Add(new UniformNodeFactory(PinTypes.Float, NodeCategory.Parameter, "ElapsedTimePS"));
             Add(new UniformNodeFactory(PinTypes.Float, NodeCategory.Parameter, "ElapsedTime"));
+            Add(new BuildInVariableNodeFactory(PinTypes.Vec4, NodeCategory.Parameter, NodeTypes.FragCoord));
+            Add(new BuildInVariableNodeFactory(PinTypes.Bool, NodeCategory.Parameter, NodeTypes.FrontFacing));
 
+            // __________ ***
+            Add(new FunctionNodeFactory(NodeTypes.Function, NodeTypes.Function,new[] {"Text Function", "" },
+                   new[] { new Pin(PinTypes.Float, PinTypes.Float) }, new[] { new Pin("", PinTypes.Float) })
+                   );
+
+            Add(new FunctionNodeFactory(NodeTypes.FuncAlone, NodeTypes.FuncAlone, new[] { "Text Function", "" },
+                   new[] { new Pin(PinTypes.Float, PinTypes.Float) }, new[] { new Pin("", PinTypes.Float) })
+                   );
 #if DEBUG
-            foreach (var parameter in NodeTypes._uniforms)
-                Add(new UniformNodeFactory(parameter.Value, NodeCategory.Parameter, parameter.Value + "Uniform"));
+            var debugVisibility = NodeFactoryVisibility.Visible;
+#else
+            var debugVisibility = NodeFactoryVisibility.Hidden;
 #endif
+            foreach (var parameter in NodeTypes._uniforms)
+                Add(new UniformNodeFactory(parameter.Value, NodeCategory.Parameter, parameter.Value + "Uniform", debugVisibility));
 
 
             Add(new OutputNodeFactory(NodeTypes.AmbientColor, "ambientColor", PinTypes.Vec4));
@@ -91,16 +104,17 @@ namespace Urho3DMaterialEditor.Model
 
             foreach (var connector in NodeTypes._connectors)
                 Add(new ConnectorNodeFactory(connector.Key, "Connect " + connector.Value, connector.Value));
-#if DEBUG
             foreach (var attribute in NodeTypes._attributes)
-                Add(new AttributeNodeFactory(attribute.Key, attribute.Value + "Attribute", attribute.Value));
-            Add(new OutputNodeFactory(NodeTypes.Special.FinalColor, "finalColor", PinTypes.Vec4));
-            Add(new OutputNodeFactory(NodeTypes.Special.FinalData0, "fragData[0]", PinTypes.Vec4));
-            Add(new OutputNodeFactory(NodeTypes.Special.FinalData1, "fragData[1]", PinTypes.Vec4));
-            Add(new OutputNodeFactory(NodeTypes.Special.FinalData2, "fragData[2]", PinTypes.Vec4));
-            Add(new OutputNodeFactory(NodeTypes.Special.FinalData3, "fragData[3]", PinTypes.Vec4));
-#endif
+                Add(new AttributeNodeFactory(attribute.Key, attribute.Value + "Attribute", attribute.Value, debugVisibility));
+            Add(new OutputNodeFactory(NodeTypes.Special.FinalColor, "finalColor", PinTypes.Vec4, debugVisibility));
+            Add(new OutputNodeFactory(NodeTypes.Special.FragData0, "fragData[0]", PinTypes.Vec4, debugVisibility));
+            Add(new OutputNodeFactory(NodeTypes.Special.FragData1, "fragData[1]", PinTypes.Vec4, debugVisibility));
+            Add(new OutputNodeFactory(NodeTypes.Special.FragData2, "fragData[2]", PinTypes.Vec4, debugVisibility));
+            Add(new OutputNodeFactory(NodeTypes.Special.FragData3, "fragData[3]", PinTypes.Vec4, debugVisibility));
 
+            Add(new MarkerNodeFactory(NodeTypes.Cull, NodeTypes.Cull, Urho.CullMode.Ccw.ToString()));
+            Add(new MarkerNodeFactory(NodeTypes.ShadowCull, NodeTypes.ShadowCull, Urho.CullMode.Ccw.ToString()));
+            Add(new MarkerNodeFactory(NodeTypes.Fill, NodeTypes.Fill, Urho.FillMode.Solid.ToString()));
             Add(new DefineNodeFactory(NodeTypes.Define, NodeTypes.Define));
             Add(new DefineNodeFactory(NodeTypes.Undefine, NodeTypes.Undefine));
             foreach (var connector in NodeTypes._ifdefs)
@@ -835,6 +849,32 @@ namespace Urho3DMaterialEditor.Model
             Add(FunctionNodeFactory.Function(NodeTypes.SubtractVec4Vec4, NodeTypes.SubtractVec4Vec4,
                 NodeTypes.SubCategories.Arithmetic, "subtract",
                 new[] {new Pin(PinIds.X, PinTypes.Vec4), new Pin(PinIds.Y, PinTypes.Vec4)}, PinTypes.Vec4));
+
+            Add(FunctionNodeFactory.Function(NodeTypes.MinusFloat, NodeTypes.MinusFloat,
+                NodeTypes.SubCategories.Arithmetic, "minus",
+                new[] { new Pin(PinIds.X, PinTypes.Float) }, PinTypes.Float));
+            Add(FunctionNodeFactory.Function(NodeTypes.MinusVec2, NodeTypes.MinusVec2,
+                NodeTypes.SubCategories.Arithmetic, "minus",
+                new[] { new Pin(PinIds.X, PinTypes.Vec2) }, PinTypes.Vec2));
+            Add(FunctionNodeFactory.Function(NodeTypes.MinusVec3, NodeTypes.MinusVec3,
+                NodeTypes.SubCategories.Arithmetic, "minus",
+                new[] { new Pin(PinIds.X, PinTypes.Vec3) }, PinTypes.Vec3));
+            Add(FunctionNodeFactory.Function(NodeTypes.MinusVec4, NodeTypes.MinusVec4,
+                NodeTypes.SubCategories.Arithmetic, "minus",
+                new[] { new Pin(PinIds.X, PinTypes.Vec4) }, PinTypes.Vec4));
+
+            Add(FunctionNodeFactory.Function(NodeTypes.SaturateFloat, NodeTypes.SaturateFloat,
+                NodeTypes.SubCategories.Arithmetic, "saturate",
+                new[] { new Pin(PinIds.X, PinTypes.Float) }, PinTypes.Float));
+            Add(FunctionNodeFactory.Function(NodeTypes.SaturateVec2, NodeTypes.SaturateVec2,
+                NodeTypes.SubCategories.Arithmetic, "saturate",
+                new[] { new Pin(PinIds.X, PinTypes.Vec2) }, PinTypes.Vec2));
+            Add(FunctionNodeFactory.Function(NodeTypes.SaturateVec3, NodeTypes.SaturateVec3,
+                NodeTypes.SubCategories.Arithmetic, "saturate",
+                new[] { new Pin(PinIds.X, PinTypes.Vec3) }, PinTypes.Vec3));
+            Add(FunctionNodeFactory.Function(NodeTypes.SaturateVec4, NodeTypes.SaturateVec4,
+                NodeTypes.SubCategories.Arithmetic, "saturate",
+                new[] { new Pin(PinIds.X, PinTypes.Vec4) }, PinTypes.Vec4));
 
             Add(FunctionNodeFactory.Function(NodeTypes.CrossVec3Vec3, NodeTypes.CrossVec3Vec3, "cross",
                 new[] {new Pin(PinIds.X, PinTypes.Vec3), new Pin(PinIds.Y, PinTypes.Vec3)}, PinTypes.Vec3));

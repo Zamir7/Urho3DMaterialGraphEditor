@@ -11,7 +11,9 @@ using System.Reactive.Subjects;
 using System.Text;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Threading;
+using Microsoft.Win32;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Toe.Scripting;
@@ -31,7 +33,7 @@ namespace Urho3DMaterialEditor.ViewModels
         private readonly UrhoContext _context;
         private readonly ShaderGenerator _generator;
         private readonly ScriptingCommand _rearrangeCommand;
-
+        private readonly ScriptingCommand _centerGraphCommand;
         private readonly SerialDisposable _testSubscription = new SerialDisposable();
         private readonly GraphValidator _validator;
         private PreviewApplication _application;
@@ -43,6 +45,7 @@ namespace Urho3DMaterialEditor.ViewModels
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private readonly Subject<MaterialCompilationException> _errors;
         private string _fileName;
+        private string _glslshader;
         private IObserver<MaterialCompilationException> _handleError;
         private SceneNodeViewModel _node;
         private IList<SceneNodeViewModel> _nodes;
@@ -67,6 +70,7 @@ namespace Urho3DMaterialEditor.ViewModels
             MergeCommand = new ScriptingCommand(Merge);
             SaveCommand = new ScriptingCommand(Save);
             SaveAsCommand = new ScriptingCommand(SaveAs);
+            ExportCommand = new ScriptingCommand(Export);
             OpenSceneCommand = new ScriptingCommand<string>(OpenScene);
             OpenMDLCommand = new ScriptingCommand<string>(OpenMDL);
             OpenAnimatedMDLCommand = new ScriptingCommand<string>(OpenAnimatedMDL);
@@ -76,6 +80,7 @@ namespace Urho3DMaterialEditor.ViewModels
             SetRenderPathCommand = new ScriptingCommand<string>(SetRenderPath);
             SetShadowQualityCommand = new ScriptingCommand<string>(SetShadowQuality);
             _rearrangeCommand = new ScriptingCommand(() => ScriptViewModel.Rearrange());
+            _centerGraphCommand = new ScriptingCommand(() => ToCenter());
             SaveSelectedAsCommand = new ScriptingCommand(SaveSelectedAs);
             RunScriptAnalizerCommand = new ScriptingCommand(RunScriptAnalizer);
             TestAllNodeTypesCommand = new ScriptingCommand(TestAllNodeTypes);
@@ -94,6 +99,29 @@ namespace Urho3DMaterialEditor.ViewModels
             ScriptViewModel.SelectionChanged += OnScriptViewModelOnSelectionChanged;
             New();
         }
+
+         private void ToCenter() {
+            var pn= ScriptViewModel.Nodes.Select(x => x.Position);
+ 
+            var minX = pn.Select(x => x.X).Min();
+            var maxX = pn.Select(x => x.X).Max();
+            var minY = pn.Select(x => x.Y).Min();
+            var maxY = pn.Select(x => x.Y).Max();
+
+            var aX = Math.Abs(minX - maxX);
+            var aY = Math.Abs(minY - maxY);
+
+            var zoo = Math.Min(screenWidth / aX, screenHeght / aY);
+
+            ScriptViewModel.ScaleMatrix = new Matrix(zoo, 0, 0, zoo, 0, 0);
+
+            foreach (var item in ScriptViewModel.Nodes) {
+                item.Position-= new Vector(minX, minY);
+            }
+            ScriptViewModel.Position = new Point(screenWidth / aX/2, screenHeght / aY/2);
+
+        }
+
         public float CameraDistance
         {
             get => _cameraDistance;
@@ -116,8 +144,10 @@ namespace Urho3DMaterialEditor.ViewModels
         public ScriptingCommand<string> SetShadowQualityCommand { get; set; }
 
         public ICommand RearrangeCommand => _rearrangeCommand;
-
+        public ICommand CenterGraphCommand => _centerGraphCommand;
+        
         public ScriptingCommand SaveAsCommand { get; set; }
+        public ScriptingCommand ExportCommand { get; set; }
 
         public ScriptingCommand SaveCommand { get; set; }
 
@@ -140,7 +170,14 @@ namespace Urho3DMaterialEditor.ViewModels
                 SaveCommand.CanExecute = _fileName != null;
             }
         }
-
+        public string GLSLSource
+        {
+            get => _glslshader;
+            set
+            {
+                RaiseAndSetIfChanged(ref _glslshader, value);
+            }
+        }
         public string Status
         {
             get => _status;
@@ -200,6 +237,9 @@ namespace Urho3DMaterialEditor.ViewModels
                 if (RaiseAndSetIfChanged(ref _node, value)) _application.SelectNode(_node.Info);
             }
         }
+
+        public double screenWidth { get; set; }
+        public double screenHeght { get; set; }
 
         public void Dispose()
         {
@@ -330,9 +370,33 @@ namespace Urho3DMaterialEditor.ViewModels
             }
         }
 
+        private void Export()
+        {
+            var dialog = new SaveFileDialog();
+            dialog.Filter = "Zip archive (*.zip) | *.zip";
+            var res = dialog.ShowDialog();
+            if (res == true)
+            {
+                var path = dialog.FileName;
+                using (var fileStream = _context.CreateFile(path))
+                {
+                    string name;
+                    if (FileName != null)
+                    {
+                        name = Path.GetFileNameWithoutExtension(FileName);
+                    }
+                    else
+                    {
+                        name = Path.GetFileNameWithoutExtension(dialog.FileName);
+                    }
+
+                    new SaveToZip(_context, _generator).SaveTo(fileStream, name, ScriptViewModel.Script);
+                }
+            }
+        }
         private void SaveSelectedAs()
         {
-            var file = _context.PickSaveFile("MaterialGraphs", "json");
+            var file = _context.PickSaveFile( UrhoContext.MaterialGraphs, "json");
             if (file != null)
                 _context.WriteAllText(file.Absolute,
                     JsonConvert.SerializeObject(ScriptViewModel.ExtractSelected(), Formatting.Indented,
@@ -483,6 +547,7 @@ namespace Urho3DMaterialEditor.ViewModels
                 try
                 {
                     var res = _generator.Generate(script, name, previewPin);
+                    Dispatcher.CurrentDispatcher.Invoke(() => this.GLSLSource = res?.GLSLShader);
                     _errors.OnNext(null);
                     return res;
                 }

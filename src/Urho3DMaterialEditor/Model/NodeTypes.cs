@@ -27,6 +27,11 @@ namespace Urho3DMaterialEditor.Model
         public const string LightData = "lightData";
         public const string CameraData = "cameraData";
         public const string ZoneData = "zoneData";
+        public const string FragCoord = "fragCoord";
+        public const string FrontFacing = "frontFacing";
+        public const string Cull = "cull";
+        public const string ShadowCull = "shadowCull";
+        public const string Fill = "fill";
 
         public const string SampleShadow = "sampleShadow(shadowMap,vec4)";
         public const string SampleVSMShadow = "sampleVSMShadow(shadowMap,vec2)";
@@ -238,10 +243,14 @@ namespace Urho3DMaterialEditor.Model
         public const string SubtractVec2Vec2 = "vec2-vec2";
         public const string SubtractVec3Vec3 = "vec3-vec3";
         public const string SubtractVec4Vec4 = "vec4-vec4";
-        public const string MinusFloatFloat = "-float";
-        public const string MinusVec2Vec2 = "-vec2";
-        public const string MinusVec3Vec3 = "-vec3";
-        public const string MinusVec4Vec4 = "-vec4";
+        public const string MinusFloat = "-float";
+        public const string MinusVec2 = "-vec2";
+        public const string MinusVec3 = "-vec3";
+        public const string MinusVec4 = "-vec4";
+        public const string SaturateFloat = "saturate(float)";
+        public const string SaturateVec2 = "saturate(vec2)";
+        public const string SaturateVec3 = "saturate(vec3)";
+        public const string SaturateVec4 = "saturate(vec4)";
         public const string CrossVec3Vec3 = "cross(vec3,vec3)"; //vec3 cross(vec3 x, vec3 y)
         public const string NormalizeFloat = "normalize(float)"; //float normalize(float x)
         public const string NormalizeVec2 = "normalize(vec2)"; //vec2 normalize(vec2 x)
@@ -406,6 +415,9 @@ namespace Urho3DMaterialEditor.Model
         public const string UniformPrefix = "uniform"; //
         public const string ParameterPrefix = "parameter"; //
 
+        public const string Function = "function"; //
+        public const string FuncAlone = "functionAlone"; //
+
         internal static Dictionary<string, string> _connectors;
         internal static Dictionary<string, string> _ifdefs;
         internal static Dictionary<string, string> _attributes;
@@ -521,10 +533,10 @@ namespace Urho3DMaterialEditor.Model
             switch (nodeType)
             {
                 case Special.FinalColor:
-                case Special.FinalData0:
-                case Special.FinalData1:
-                case Special.FinalData2:
-                case Special.FinalData3:
+                case Special.FragData0:
+                case Special.FragData1:
+                case Special.FragData2:
+                case Special.FragData3:
                 case Special.ShadowMapOutput:
                     return true;
             }
@@ -564,10 +576,10 @@ namespace Urho3DMaterialEditor.Model
             public const string Variable = "var";
             public const string ShadowMapOutput = "shadowMapOutput";
             public const string FinalColor = "finalColor";
-            public const string FinalData0 = "finalData[0]";
-            public const string FinalData1 = "finalData[1]";
-            public const string FinalData2 = "finalData[2]";
-            public const string FinalData3 = "finalData[3]";
+            public const string FragData0 = "finalData[0]";
+            public const string FragData1 = "finalData[1]";
+            public const string FragData2 = "finalData[2]";
+            public const string FragData3 = "finalData[3]";
 
             public const string Default = "default";
         }

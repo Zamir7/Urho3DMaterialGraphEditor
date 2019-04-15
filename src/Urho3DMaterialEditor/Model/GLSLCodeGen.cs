@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ReactiveUI;
 using Toe.Scripting.Helpers;
 using Urho3DMaterialEditor.Model.Templates;
 
@@ -18,6 +19,9 @@ mat3 GetNormalMatrix(mat4 modelMatrix)
     return mat3(modelMatrix[0].xyz, modelMatrix[1].xyz, modelMatrix[2].xyz);
 }
 ";
+
+        static public string aloneFunc;
+        private Dictionary<string, string> _dynamicFunctions = new Dictionary<string, string>();
 
         private int _ifDefCount;
         public Dictionary<NodeHelper<TranslatedMaterialGraph.NodeInfo>, string> _variables;
@@ -37,11 +41,28 @@ mat3 GetNormalMatrix(mat4 modelMatrix)
         {
             switch (node.Type)
             {
+                case NodeTypes.Function:
+                    _dynamicFunctions.Add(node.Name, BuildFunction(node));
+                    yield return new RequiredFunction(node.Name);
+                    break;
                 case NodeTypes.MakeMat3FromMat4x3:
                 case NodeTypes.MakeMat3FromMat4:
                     yield return new RequiredFunction(GetNormalMatrix);
                     break;
             }
+        }
+
+        private string BuildFunction(NodeHelper<TranslatedMaterialGraph.NodeInfo> node)
+        {
+            var tx = node.OutputPins[0].Type + " " + node.Name + "(" +
+                   string.Join(", ", node.InputPins.Select((x, index) => x.Type + " var" + (index + 1).ToString())) + ")"
+                   + Environment.NewLine + "{" + Environment.NewLine
+                   + node.Value
+                   + "}" + Environment.NewLine;
+
+            if (aloneFunc?.Length > 0) tx = aloneFunc + Environment.NewLine + tx;
+            
+            return tx;
         }
 
         public IEnumerable<NodeHelper<TranslatedMaterialGraph.NodeInfo>> GetRequiredUniforms(
@@ -76,6 +97,9 @@ mat3 GetNormalMatrix(mat4 modelMatrix)
                 case GetNormalMatrix:
                     return _getNormalMatrix;
                 default:
+                    string txt;
+                    if (_dynamicFunctions.TryGetValue(function.Name, out txt))
+                        return txt;
                     throw new NotImplementedException();
             }
         }
@@ -174,7 +198,7 @@ mat3 GetNormalMatrix(mat4 modelMatrix)
                 var def = node.Extra.Define;
                 _writer.WriteLine(def.IsAlways ? null : def.Expression,
                     "// based on node " + connectedNode.Name + " " + node.Value + " (type:" + connectedNode.Type +
-                    ", id:" + connectedNode.Id + ")");
+                    ", id:" + connectedNode.Id + "), cost estimation: "+node.Extra.EstimatedCost);
                 _writer.WriteLine(def.IsAlways ? null : def.Expression,
                     actualType + " " + node.Name + " = " + arg + ";");
             }
@@ -218,6 +242,8 @@ mat3 GetNormalMatrix(mat4 modelMatrix)
                 return GetConstantValue(node.Value, constType);
             switch (node.Type)
             {
+                case NodeTypes.Function:
+                    return node.Name + "(" + string.Join(",", args) + ")";
                 case NodeTypes.Special.Default:
                     return GenerateDefaultValue(node.OutputPins[0].Type);
                 case NodeTypes.Special.ShadowMapOutput:
@@ -231,18 +257,22 @@ mat3 GetNormalMatrix(mat4 modelMatrix)
                 case NodeTypes.Special.FinalColor:
                     _writer.WriteLine(null, "gl_FragColor = " + args[0] + ";");
                     return null;
-                case NodeTypes.Special.FinalData0:
+                case NodeTypes.Special.FragData0:
                     _writer.WriteLine(null, "gl_FragData[0] = " + args[0] + ";");
                     return null;
-                case NodeTypes.Special.FinalData1:
+                case NodeTypes.Special.FragData1:
                     _writer.WriteLine(null, "gl_FragData[1] = " + args[0] + ";");
                     return null;
-                case NodeTypes.Special.FinalData2:
+                case NodeTypes.Special.FragData2:
                     _writer.WriteLine(null, "gl_FragData[2] = " + args[0] + ";");
                     return null;
-                case NodeTypes.Special.FinalData3:
+                case NodeTypes.Special.FragData3:
                     _writer.WriteLine(null, "gl_FragData[3] = " + args[0] + ";");
                     return null;
+                case NodeTypes.FragCoord:
+                    return "gl_FragCoord";
+                case NodeTypes.FrontFacing:
+                    return "gl_FrontFacing";
                 case NodeTypes.LightColor:
                 case NodeTypes.Opacity:
                 case NodeTypes.AmbientColor:
@@ -266,8 +296,15 @@ mat3 GetNormalMatrix(mat4 modelMatrix)
                     var varyingType = GetVaryingType(node.InputPins[0].Type);
                     if (actualType != varyingType)
                         arg = varyingType + "(" + arg + ")";
+                    var connectedNode = node.InputPins[0].ConnectedPins.FirstOrDefault()?.Node;
+                    if (connectedNode != null)
+                    {
+                        _writer.WriteLine(null,
+                            "// based on node " + connectedNode.Name + " " + connectedNode.Value + " (type:" + connectedNode.Type +
+                            ", id:" + connectedNode.Id + "), cost estimation: " + connectedNode.Extra.EstimatedCost);
+                    }
 
-                    _writer.WriteLine(null, "v" + node.Value + " = " + arg + ";");
+                    _writer.WriteLine(node.Extra.Define.Expression , "v" + node.Value + " = " + arg + ";");
                 }
                     return null;
                 case NodeTypes.Discard:
@@ -327,11 +364,19 @@ mat3 GetNormalMatrix(mat4 modelMatrix)
                 case NodeTypes.SubtractVec3Vec3:
                 case NodeTypes.SubtractVec4Vec4:
                     return GenBinaryOperator("-", args);
-                case NodeTypes.MinusFloatFloat:
-                case NodeTypes.MinusVec2Vec2:
-                case NodeTypes.MinusVec3Vec3:
-                case NodeTypes.MinusVec4Vec4:
+                case NodeTypes.MinusFloat:
+                case NodeTypes.MinusVec2:
+                case NodeTypes.MinusVec3:
+                case NodeTypes.MinusVec4:
                     return GenUnaryOperator("-", args);
+                case NodeTypes.SaturateFloat:
+                    return "clamp(" + args[0] + ", 0.0, 1.0)";
+                case NodeTypes.SaturateVec2:
+                    return "clamp(" + args[0] + ", vec2(0.0, 0.0), vec2(1.0, 1.0))";
+                case NodeTypes.SaturateVec3:
+                    return "clamp(" + args[0] + ", vec3(0.0, 0.0, 0.0), vec3(1.0, 1.0, 1.0))";
+                case NodeTypes.SaturateVec4:
+                    return "clamp(" + args[0] + ", vec4(0.0, 0.0, 0.0, 0.0), vec4(1.0, 1.0, 1.0, 1.0))";
                 case NodeTypes.DivideFloatFloat:
                 case NodeTypes.DivideVec2Float:
                 case NodeTypes.DivideVec3Float:
@@ -375,6 +420,10 @@ mat3 GetNormalMatrix(mat4 modelMatrix)
                     return GenBinaryOperator("<", args);
                 case NodeTypes.NotBool:
                     return "!("+args[0]+")";
+                case NodeTypes.EqualFloatFloat:
+                    return GenBinaryOperator("==", args);
+                case NodeTypes.NotEqualFloatFloat:
+                    return GenBinaryOperator("!=", args);
                 case NodeTypes.GreaterThanFloatFloat:
                     return GenBinaryOperator(">", args);
                 case NodeTypes.LessThanEqualFloatFloat:

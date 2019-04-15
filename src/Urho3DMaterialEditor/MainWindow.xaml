@@ -28,6 +28,7 @@
                 <MenuItem Header="Open" Command="{Binding OpenCommand}" />
                 <MenuItem Header="Save" Command="{Binding SaveCommand}" />
                 <MenuItem Header="Save As ..." Command="{Binding SaveAsCommand}" />
+                <MenuItem Header="Share/Export ..." Command="{Binding ExportCommand}" />
                 <Separator />
                 <MenuItem Header="Save Selected As ..." Command="{Binding SaveSelectedAsCommand}" />
                 <MenuItem Header="Merge With ..." Command="{Binding MergeCommand}" />
@@ -47,6 +48,7 @@
                 <MenuItem Header="Ungroup Selected" Command="{Binding ScriptViewModel.UngroupSelectedCommand}" />
             </MenuItem>
             <MenuItem Header="View">
+                <MenuItem Header="Centering graph" Command="{Binding CenterGraphCommand}" />
                 <MenuItem Header="View Final Graph" Command="{Binding RunScriptAnalizerCommand}" />
                 <MenuItem Header="Rearrange" Command="{Binding RearrangeCommand}" />
                 <Separator />
@@ -100,6 +102,26 @@
         <StackPanel Grid.Row="1" Orientation="Horizontal">
             <Button MinWidth="24" MinHeight="24" Margin="2" Command="{Binding ScriptViewModel.UndoCommand}">&#x21BA;</Button>
             <Button MinWidth="24" MinHeight="24" Margin="2" Command="{Binding ScriptViewModel.RedoCommand}">&#x21BB;</Button>
+            <ToggleButton MinWidth="24" MinHeight="24" Margin="2" Content="txt" IsChecked="False" Click="ToggleButton_Click"/>
+            <!--<ToggleButton x:Name="enable" MaxHeight="24" BorderThickness="0" Background="Transparent"  IsChecked="True" MaxWidth="24" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="4,4,4,4">
+                <ToggleButton.Style>
+                    <Style TargetType="ToggleButton">
+                        <Setter Property="OverridesDefaultStyle" Value="True"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ToggleButton">
+                                <Image Name="image" Source=".\Icons\Play.png"/>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsChecked" Value="True">
+                                        <Setter TargetName="image" Property="Source" Value=".\Icons\Pause.png"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                    </Style>
+                </ToggleButton.Style>
+            </ToggleButton>-->
         </StackPanel>
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
@@ -107,52 +129,80 @@
                 <ColumnDefinition Width="5" />
                 <ColumnDefinition Width="1*" />
             </Grid.ColumnDefinitions>
-            <views:ScriptView DataContext="{Binding ScriptViewModel}">
-                <views:ScriptView.Resources>
-                    <DataTemplate DataType="{x:Type viewModels:Vector4ViewModel}">
-                        <views1:Vector4NodeView />
-                    </DataTemplate>
-                    <DataTemplate DataType="{x:Type viewModels:Vector3ViewModel}">
-                        <views1:Vector3NodeView />
-                    </DataTemplate>
-                    <DataTemplate DataType="{x:Type viewModels:Vector2ViewModel}">
-                        <views1:Vector2NodeView />
-                    </DataTemplate>
-                    <DataTemplate DataType="{x:Type viewModels:Mat4ViewModel}">
-                        <views1:Mat4NodeView />
-                    </DataTemplate>
-                    <DataTemplate DataType="{x:Type viewModels:Mat3ViewModel}">
-                        <views1:Mat3NodeView />
-                    </DataTemplate>
-                    <DataTemplate DataType="{x:Type viewModels:Mat2ViewModel}">
-                        <views1:Mat2NodeView />
-                    </DataTemplate>
-                    <DataTemplate DataType="{x:Type viewModels:ScalarViewModel}">
-                        <views1:ScalarNodeView />
-                    </DataTemplate>
-                    <DataTemplate DataType="{x:Type viewModels:IntViewModel}">
-                        <views1:IntNodeView />
-                    </DataTemplate>
-                    <DataTemplate DataType="{x:Type viewModels:IfDefViewModel}">
-                        <views1:StringNodeView />
-                    </DataTemplate>
-                    <DataTemplate DataType="{x:Type viewModels:StringViewModel}">
-                        <views1:StringNodeView />
-                    </DataTemplate>
-                    <DataTemplate DataType="{x:Type viewModels:SamplerViewModel}">
-                        <views1:SamplerNodeView />
-                    </DataTemplate>
-                    <DataTemplate DataType="{x:Type viewModels:SamplerCubeViewModel}">
-                        <views1:SamplerNodeView />
-                    </DataTemplate>
-                    <DataTemplate DataType="{x:Type viewModels:SpecularViewModel}">
-                        <views1:SpecularNodeView />
-                    </DataTemplate>
-                    <DataTemplate DataType="{x:Type viewModels:ColorViewModel}">
-                        <views1:ColorNodeView />
-                    </DataTemplate>
-                </views:ScriptView.Resources>
-            </views:ScriptView>
+            <Grid Grid.Row="0" Name="rowMn" SizeChanged="rowMn_SizeChanged">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="5"/>
+                    <RowDefinition Height="0"  Name="rowSh"/>
+                </Grid.RowDefinitions>
+                <views:ScriptView Name="rowMn2" DataContext="{Binding ScriptViewModel}" Grid.Row="0">
+                    <views:ScriptView.Resources>
+                        <DataTemplate DataType="{x:Type viewModels:EnumViewModel}">
+                            <views1:EnumNodeView />
+                        </DataTemplate>
+                        <DataTemplate DataType="{x:Type viewModels:Vector4ViewModel}">
+                            <views1:Vector4NodeView />
+                        </DataTemplate>
+                        <DataTemplate DataType="{x:Type viewModels:Vector3ViewModel}">
+                            <views1:Vector3NodeView />
+                        </DataTemplate>
+                        <DataTemplate DataType="{x:Type viewModels:Vector2ViewModel}">
+                            <views1:Vector2NodeView />
+                        </DataTemplate>
+                        <DataTemplate DataType="{x:Type viewModels:Mat4ViewModel}">
+                            <views1:Mat4NodeView />
+                        </DataTemplate>
+                        <DataTemplate DataType="{x:Type viewModels:Mat3ViewModel}">
+                            <views1:Mat3NodeView />
+                        </DataTemplate>
+                        <DataTemplate DataType="{x:Type viewModels:Mat2ViewModel}">
+                            <views1:Mat2NodeView />
+                        </DataTemplate>
+                        <DataTemplate DataType="{x:Type viewModels:ScalarViewModel}">
+                            <views1:ScalarNodeView />
+                        </DataTemplate>
+                        <DataTemplate DataType="{x:Type viewModels:IntViewModel}">
+                            <views1:IntNodeView />
+                        </DataTemplate>
+                        <DataTemplate DataType="{x:Type viewModels:IfDefViewModel}">
+                            <views1:StringNodeView />
+                        </DataTemplate>
+                        <DataTemplate DataType="{x:Type viewModels:StringViewModel}">
+                            <views1:StringNodeView />
+                        </DataTemplate>
+                        <DataTemplate DataType="{x:Type viewModels:SamplerViewModel}">
+                            <views1:SamplerNodeView />
+                        </DataTemplate>
+                        <DataTemplate DataType="{x:Type viewModels:SamplerCubeViewModel}">
+                            <views1:SamplerNodeView />
+                        </DataTemplate>
+                        <DataTemplate DataType="{x:Type viewModels:SpecularViewModel}">
+                            <views1:SpecularNodeView />
+                        </DataTemplate>
+                        <DataTemplate DataType="{x:Type viewModels:ColorViewModel}">
+                            <views1:ColorNodeView />
+                        </DataTemplate>
+                        <DataTemplate DataType="{x:Type viewModels:FunctionViewModel}">
+                            <views1:FunctionNodeView />
+                        </DataTemplate>
+                        <DataTemplate DataType="{x:Type viewModels:FunctAloneViewModel}">
+                            <views1:FuncAloneNodeView />
+                        </DataTemplate>
+
+                    </views:ScriptView.Resources>
+                </views:ScriptView>
+                <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+                <Grid Grid.Row="2" >
+                    <views1:MvvmTextEditor x:Name="codeEdit" >
+                        <views1:MvvmTextEditor.DocumentText>
+                            <Binding Path ="GLSLSource" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged"/>
+                        </views1:MvvmTextEditor.DocumentText>
+                    </views1:MvvmTextEditor>
+                    <!--<views1:CEditor Text="{Binding GLSLSource, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>-->
+                    <!--<TextBox Text="{Binding GLSLSource}" Background="Black" Foreground="Wheat" FontSize="13" TextWrapping="NoWrap" AcceptsReturn="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto"/>-->
+                </Grid>
+
+            </Grid>
             <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
             <Grid Grid.Column="2">
                 <Grid.RowDefinitions>
@@ -163,10 +213,10 @@
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="Distance = "  VerticalAlignment="Center"/>
                     <TextBox BorderThickness="0" IsReadOnly="True"  VerticalAlignment="Center">
-                    <TextBox.Text>
-                        <Binding Path="CameraDistance" StringFormat="0.000" />
-                    </TextBox.Text>
-                </TextBox>
+                        <TextBox.Text>
+                            <Binding Path="CameraDistance" StringFormat="0.000" />
+                        </TextBox.Text>
+                    </TextBox>
                     <Button Content="Create LOD" IsEnabled="False" Command="{Binding CreateLodCommand}" VerticalAlignment="Center"/>
                 </StackPanel>
                 <wpf:UrhoSurface  Grid.Row="1" x:Name="_urhoSurfaceCtrl" />
@@ -174,7 +224,13 @@
             </Grid>
         </Grid>
         <Grid Grid.Row="3">
-            <TextBlock x:Name="Status" />
+            <TextBlock x:Name="Status" >
+                <TextBlock.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Copy" Click="MenuItem_Click"></MenuItem>
+                    </ContextMenu>
+                </TextBlock.ContextMenu>
+            </TextBlock>
         </Grid>
     </Grid>
 </Window>

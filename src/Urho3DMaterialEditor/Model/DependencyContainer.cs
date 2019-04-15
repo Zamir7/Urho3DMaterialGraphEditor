@@ -17,6 +17,16 @@ namespace Urho3DMaterialEditor.Model
 
             #region ParametersAndValues
 
+            builder.RegisterType<FunctionViewModel>()
+                .Named<NodeViewModel>(NodeTypes.Function)
+                .ExternallyOwned()
+                .InstancePerDependency();
+
+            builder.RegisterType<FunctAloneViewModel>()
+                .Named<NodeViewModel>(NodeTypes.FuncAlone)
+                .ExternallyOwned()
+                .InstancePerDependency();
+
             builder.RegisterType<SamplerViewModel>()
                 .Named<NodeViewModel>(NodeTypes.Sampler2D)
                 .ExternallyOwned()
@@ -68,14 +78,25 @@ namespace Urho3DMaterialEditor.Model
                 .ExternallyOwned()
                 .InstancePerDependency();
 
+            builder.RegisterType<EnumViewModel<Urho.CullMode>>()
+                .Named<NodeViewModel>(NodeTypes.Cull)
+                .Named<NodeViewModel>(NodeTypes.ShadowCull)
+                .ExternallyOwned()
+                .InstancePerDependency();
+
+            builder.RegisterType<EnumViewModel<Urho.FillMode>>()
+                .Named<NodeViewModel>(NodeTypes.Fill)
+                .ExternallyOwned()
+                .InstancePerDependency();
+
             builder.RegisterType<StringViewModel>()
                 .Named<NodeViewModel>(NodeTypes.Define)
                 .Named<NodeViewModel>(NodeTypes.Undefine)
                 .Named<NodeViewModel>(NodeTypes.Special.FinalColor)
-                .Named<NodeViewModel>(NodeTypes.Special.FinalData0)
-                .Named<NodeViewModel>(NodeTypes.Special.FinalData1)
-                .Named<NodeViewModel>(NodeTypes.Special.FinalData2)
-                .Named<NodeViewModel>(NodeTypes.Special.FinalData3)
+                .Named<NodeViewModel>(NodeTypes.Special.FragData0)
+                .Named<NodeViewModel>(NodeTypes.Special.FragData1)
+                .Named<NodeViewModel>(NodeTypes.Special.FragData2)
+                .Named<NodeViewModel>(NodeTypes.Special.FragData3)
                 .Named<NodeViewModel>(NodeTypes.Special.ShadowMapOutput)
                 .ExternallyOwned()
                 .InstancePerDependency();

@@ -10,7 +10,7 @@ foreach (var define in Graph.Defines)
     WriteLine("#if !defined("+define+")");
     WriteLine("#define "+define);
     WriteLine("#endif");
-}
+} 
 
 foreach (var undefine in Graph.Undefines)
 {
@@ -51,11 +51,16 @@ foreach (var uniform in Graph.VertexShaderAttributes)
 foreach (var uniform in VertexShaderUniformsAndFunctions.Uniforms)
 {
 	uniform.Extra.Define.WriteLineIfDef(this,"uniform "+GLSLCodeGen.GetType(uniform.Type)+" "+uniform.Name+GLSLCodeGen.GetArraySize(uniform.Type)+";");
-}
-foreach (var uniform in Graph.VertexShaderVaryings)
+}// "uniform highp "
+foreach (var varyingGroup in Graph.VertexShaderVaryings.ToLookup(_=>_.Extra.Define.GetExpression()))
 {
-	uniform.Extra.Define.WriteLineIfDef(this,"varying "+GLSLCodeGen.GetType(GLSLCodeGen.GetVaryingType(uniform.InputPins[0].Type))+" v"+uniform.Value+GLSLCodeGen.GetArraySize(uniform.InputPins[0].Type)+";");
+    foreach (var varying in varyingGroup)
+    {
+        WriteLine(varyingGroup.Key, "varying " + GLSLCodeGen.GetType(GLSLCodeGen.GetVaryingType(varying.InputPins[0].Type)) + " v" + varying.Value + GLSLCodeGen.GetArraySize(varying.InputPins[0].Type) + ";");
+    }
 }
+
+this.WriteLine(null,"");
 #>
 
 attribute float iObjectIndex;
@@ -75,6 +80,7 @@ void VS()
 <#
 	foreach (var varying in Graph.VertexShaderVaryings)
 		VertexShaderGenerator.GenerateCode(varying);
+	this.WriteLine(null,"");
 	var ret = VertexShaderGenerator.GenerateCode(Graph.OutputPosition);
 	WriteLine("vec4 ret =  " + ret + ";");
 	this.WriteLine(null,"");
@@ -110,7 +116,7 @@ foreach (var uniform in PixelShaderUniformsAndFunctions.Uniforms)
 	{
 		uniform.Extra.Define.WriteLineIfDef(this, "uniform "+GLSLCodeGen.GetType(uniform.Type)+" "+uniform.Name+";");
 	}
-//	WriteEndIf(uniform);
+//	WriteEndIf(uniform);  //uniform highp 
 }
 foreach (var uniform in Graph.Samplers)
 {
@@ -133,10 +139,15 @@ foreach (var uniform in Graph.Samplers)
 	uniform.Extra.Define.WriteLineIfDef(this,"uniform "+GLSLCodeGen.GetType(uniform.OutputPins[0])+" "+GLSLCodeGen.GetSamplerName(uniform)+";");
 	}
 }
-foreach (var uniform in Graph.PixelShaderVaryings)
+foreach (var varyingGroup in Graph.PixelShaderVaryings.ToLookup(_=>_.Extra.Define.GetExpression()))
 {
-	uniform.Extra.Define.WriteLineIfDef(this,"varying "+GLSLCodeGen.GetType(GLSLCodeGen.GetVaryingType(uniform.OutputPins[0].Type))+" v"+uniform.Value+GLSLCodeGen.GetArraySize(uniform.OutputPins[0].Type)+";");
+    foreach (var varying in varyingGroup)
+    {
+        WriteLine(varyingGroup.Key, "varying " + GLSLCodeGen.GetType(GLSLCodeGen.GetVaryingType(varying.OutputPins[0].Type)) + " v" + varying.Value + GLSLCodeGen.GetArraySize(varying.OutputPins[0].Type) + ";");
+    }
 }
+
+this.WriteLine(null,"");
 #>
 
 <#
