@@ -1,9 +1,7 @@
 ﻿using Toe.Scripting;
 
-namespace Urho3DMaterialEditor.Model
-{
-    public class VertexDataNodeFactory : FunctionNodeFactory
-    {
+namespace Urho3DMaterialEditor.Model {
+    public class VertexDataNodeFactory : FunctionNodeFactory {
         public const string Pos = "Pos";
         public const string Normal = "Normal";
         public const string Color = "Color";
@@ -16,7 +14,7 @@ namespace Urho3DMaterialEditor.Model
         public const string CubeTexCoord1 = "CubeTexCoord1";
 
         public VertexDataNodeFactory() : base(NodeTypes.VertexData, "Vertex",
-            new[] {MaterialNodeRegistry.Categories.Data},
+            new[] { MaterialNodeRegistry.Categories.Data },
             new Pin[] { },
             new[]
             {
@@ -30,8 +28,7 @@ namespace Urho3DMaterialEditor.Model
                 new Pin(BlendIndices, PinTypes.Ivec4),
                 new Pin(CubeTexCoord, PinTypes.Vec3),
                 new Pin(CubeTexCoord1, PinTypes.Vec4)
-            })
-        {
+            }) {
         }
     }
 }

@@ -1,9 +1,7 @@
 ﻿using System.Collections.Generic;
 
-namespace Urho3DMaterialEditor.Model
-{
-    public static class PinTypes
-    {
+namespace Urho3DMaterialEditor.Model {
+    public static class PinTypes {
         public const string Sampler2D = "sampler2D";
 
         //public const string Sampler3D = "sampler3D";
@@ -28,20 +26,16 @@ namespace Urho3DMaterialEditor.Model
         public const string LightMatrices = "lightMatrices";
         public const string VertexLights = "vertexLights";
 
-        public static IEnumerable<string> SamplerTypes
-        {
-            get
-            {
+        public static IEnumerable<string> SamplerTypes {
+            get {
                 yield return Sampler2D;
                 //yield return Sampler3D;
                 yield return SamplerCube;
             }
         }
 
-        public static IEnumerable<string> DataTypesExceptArrays
-        {
-            get
-            {
+        public static IEnumerable<string> DataTypesExceptArrays {
+            get {
                 yield return Float;
                 yield return Vec2;
                 yield return Vec3;
@@ -61,10 +55,8 @@ namespace Urho3DMaterialEditor.Model
             }
         }
 
-        public static IEnumerable<string> DataTypes
-        {
-            get
-            {
+        public static IEnumerable<string> DataTypes {
+            get {
                 foreach (var type in DataTypesExceptArrays) yield return type;
                 yield return Skin;
                 yield return LightMatrices;
@@ -72,8 +64,7 @@ namespace Urho3DMaterialEditor.Model
             }
         }
 
-        public static class Special
-        {
+        public static class Special {
             public const string Color = "color";
         }
     }

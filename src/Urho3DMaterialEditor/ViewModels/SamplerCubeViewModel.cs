@@ -8,23 +8,19 @@ using Toe.Scripting.WPF;
 using Toe.Scripting.WPF.ViewModels;
 using Urho3DMaterialEditor.Model;
 
-namespace Urho3DMaterialEditor.ViewModels
-{
-    public class SamplerCubeViewModel : NodeViewModel
-    {
+namespace Urho3DMaterialEditor.ViewModels {
+    public class SamplerCubeViewModel : NodeViewModel {
         private readonly UrhoContext _context;
         private ImageSource _imageSource;
 
-        public SamplerCubeViewModel(ScriptViewModel script, ScriptNode node, UrhoContext context) : base(script, node)
-        {
+        public SamplerCubeViewModel(ScriptViewModel script, ScriptNode node, UrhoContext context) : base(script, node) {
             _context = context;
             PickTextureCommand = new ScriptingCommand(PickTexture);
             ResetTextureCommand = new ScriptingCommand(ResetTexture);
             UpdateImageSource();
         }
 
-        public ImageSource ImageSource
-        {
+        public ImageSource ImageSource {
             get => _imageSource;
             set => RaiseAndSetIfChanged(ref _imageSource, value);
         }
@@ -32,24 +28,20 @@ namespace Urho3DMaterialEditor.ViewModels
         public ICommand PickTextureCommand { get; set; }
         public ICommand ResetTextureCommand { get; set; }
 
-        private void ResetTexture()
-        {
+        private void ResetTexture() {
             Value = null;
             UpdateImageSource();
         }
 
-        private void PickTexture()
-        {
+        private void PickTexture() {
             var value = _context.PickFile("Textures", "dds", "xml");
-            if (value != null)
-            {
+            if (value != null) {
                 Value = value.Relative;
                 UpdateImageSource();
             }
         }
 
-        private void UpdateImageSource()
-        {
+        private void UpdateImageSource() {
             ImageSource = SamplerViewModel.GetImageSource(_context, Value);
         }
     }

@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Urho3DMaterialEditor.Model
-{
-    public static class NodeTypes
-    {
+namespace Urho3DMaterialEditor.Model {
+    public static class NodeTypes {
         public const string IfDefPrefix = "ifdef";
         public const string Define = "define";
         public const string Undefine = "undefine";
@@ -425,8 +423,7 @@ namespace Urho3DMaterialEditor.Model
         internal static Dictionary<string, string> _parameters;
         internal static Dictionary<string, string> _constants;
 
-        static NodeTypes()
-        {
+        static NodeTypes() {
             _connectors = PinTypes.DataTypes.Concat(PinTypes.SamplerTypes)
                 .Select(_ => Tuple.Create(_, MakeType(ConnectorPrefix, _))).ToDictionary(_ => _.Item2, _ => _.Item1);
             _ifdefs = PinTypes.DataTypes.Select(_ => Tuple.Create(_, MakeType(IfDefPrefix, _)))
@@ -441,16 +438,13 @@ namespace Urho3DMaterialEditor.Model
                 .ToDictionary(_ => _.Item2, _ => _.Item1);
         }
 
-        private static IEnumerable<string> Concat(this IEnumerable<string> source, string val)
-        {
+        private static IEnumerable<string> Concat(this IEnumerable<string> source, string val) {
             foreach (var entry in source) yield return entry;
             yield return val;
         }
 
-        public static bool IsSampler(string type)
-        {
-            switch (type)
-            {
+        public static bool IsSampler(string type) {
+            switch (type) {
                 case Sampler2D:
                 case SamplerCube:
                     return true;
@@ -459,12 +453,10 @@ namespace Urho3DMaterialEditor.Model
             return false;
         }
 
-        public static bool IsUniform(string type)
-        {
+        public static bool IsUniform(string type) {
             if (_uniforms.ContainsKey(type))
                 return true;
-            switch (type)
-            {
+            switch (type) {
                 case LightData:
                 case ObjectData:
                 case ZoneData:
@@ -475,17 +467,14 @@ namespace Urho3DMaterialEditor.Model
             return false;
         }
 
-        public static bool IsParameter(string type)
-        {
+        public static bool IsParameter(string type) {
             return _parameters.ContainsKey(type);
         }
 
-        public static bool IsAttribute(string type)
-        {
+        public static bool IsAttribute(string type) {
             if (_attributes.ContainsKey(type))
                 return true;
-            switch (type)
-            {
+            switch (type) {
                 case VertexData:
                     //public const string ColorAttribute = "сolorAttribute";
                     //public const string Vector4Attribute = "vector4Attribute";
@@ -498,15 +487,12 @@ namespace Urho3DMaterialEditor.Model
             return false;
         }
 
-        public static bool IsConstant(string type)
-        {
+        public static bool IsConstant(string type) {
             return _constants.ContainsKey(type);
         }
 
-        public static bool IsOutput(string nodeType)
-        {
-            switch (nodeType)
-            {
+        public static bool IsOutput(string nodeType) {
+            switch (nodeType) {
                 case AmbientColor:
                 case DeferredOutput:
                 case LightColor:
@@ -518,20 +504,16 @@ namespace Urho3DMaterialEditor.Model
             return false;
         }
 
-        public static bool IsConnectorType(string nodeType)
-        {
+        public static bool IsConnectorType(string nodeType) {
             return _connectors.ContainsKey(nodeType);
         }
 
-        public static bool IsIfDefType(string nodeType)
-        {
+        public static bool IsIfDefType(string nodeType) {
             return _ifdefs.ContainsKey(nodeType);
         }
 
-        public static bool IsFinalColor(string nodeType)
-        {
-            switch (nodeType)
-            {
+        public static bool IsFinalColor(string nodeType) {
+            switch (nodeType) {
                 case Special.FinalColor:
                 case Special.FragData0:
                 case Special.FragData1:
@@ -544,8 +526,7 @@ namespace Urho3DMaterialEditor.Model
             return false;
         }
 
-        public static string MakeType(string prefix, string type)
-        {
+        public static string MakeType(string prefix, string type) {
             var sb = new StringBuilder();
             sb.Append(prefix);
             sb.Append("(");
@@ -554,23 +535,20 @@ namespace Urho3DMaterialEditor.Model
             return sb.ToString();
         }
 
-        public static class SubCategories
-        {
+        public static class SubCategories {
             public const string Logic = "Logic";
             public const string Arithmetic = "Arithmetic";
             public const string Trigonometry = "Trigonometry";
         }
 
-        public static class Categories
-        {
+        public static class Categories {
             public const string Preprocessor = "Preprocessor";
             public const string Functions = "Functions";
             public const string Connectors = "Connectors";
             public const string Data = "Data";
         }
 
-        public static class Special
-        {
+        public static class Special {
             public const string SetVarying = "setVarying";
             public const string GetVarying = "getVarying";
             public const string Variable = "var";

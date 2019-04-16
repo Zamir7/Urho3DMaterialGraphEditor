@@ -3,16 +3,12 @@ using System.Linq;
 using Toe.Scripting;
 using Urho;
 
-namespace Urho3DMaterialEditor.Model
-{
-    public abstract class AbstractNodeFactory : INodeFactory
-    {
-        public AbstractNodeFactory(string type, string name, string category, NodeFactoryVisibility visibility = NodeFactoryVisibility.Visible) : this(type, name, new[] {category}, visibility)
-        {
+namespace Urho3DMaterialEditor.Model {
+    public abstract class AbstractNodeFactory : INodeFactory {
+        public AbstractNodeFactory(string type, string name, string category, NodeFactoryVisibility visibility = NodeFactoryVisibility.Visible) : this(type, name, new[] { category }, visibility) {
         }
 
-        public AbstractNodeFactory(string type, string name, string[] category, NodeFactoryVisibility visibility = NodeFactoryVisibility.Visible)
-        {
+        public AbstractNodeFactory(string type, string name, string[] category, NodeFactoryVisibility visibility = NodeFactoryVisibility.Visible) {
             Type = type;
             Name = name;
             Category = category;
@@ -36,9 +32,8 @@ namespace Urho3DMaterialEditor.Model
         public virtual bool HasExitPins => false;
         public abstract ScriptNode Build();
 
-        public override string ToString()
-        {
-            return $"Node factory \"{string.Join(".", Category.Concat(new[] {Name}))}\" of type \"{Type}\"";
+        public override string ToString() {
+            return $"Node factory \"{string.Join(".", Category.Concat(new[] { Name }))}\" of type \"{Type}\"";
         }
     }
 }

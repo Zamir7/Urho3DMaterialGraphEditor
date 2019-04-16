@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Urho;
+using Urho.Actions;
 
-namespace Urho3DMaterialEditor.Model
-{
-    public class PreviewApplication : Application, IPreview
-    {
+namespace Urho3DMaterialEditor.Model {
+    public class PreviewApplication : Application, IPreview {
         private bool _animatedModel;
         private Animation _animation;
 
@@ -19,28 +19,22 @@ namespace Urho3DMaterialEditor.Model
         private readonly float mouseSensitivity = .1f;
         private float _cameraDistance = 10;
 
-        public PreviewApplication(ApplicationOptions options) : base(options)
-        {
+        public PreviewApplication(ApplicationOptions options) : base(options) {
         }
 
-        public PreviewApplication(IntPtr handle) : base(handle)
-        {
+        public PreviewApplication(IntPtr handle) : base(handle) {
         }
 
-        protected PreviewApplication(UrhoObjectFlag emptyFlag) : base(emptyFlag)
-        {
+        protected PreviewApplication(UrhoObjectFlag emptyFlag) : base(emptyFlag) {
         }
 
         protected float Yaw { get; set; }
         protected float Pitch { get; set; }
 
-        public float CameraDistance
-        {
+        public float CameraDistance {
             get => _cameraDistance;
-            set
-            {
-                if (_cameraDistance != value)
-                {
+            set {
+                if (_cameraDistance != value) {
                     _cameraDistance = value;
                     NotifyCameraDistance();
                 }
@@ -55,33 +49,26 @@ namespace Urho3DMaterialEditor.Model
 
         public Vector3 CameraTarget { get; set; }
 
-        public void UpdatePreivew(PreivewContent content)
-        {
+        public void UpdatePreivew(PreivewContent content) {
             if (content == null)
                 return;
-            InvokeOnMain(() =>
-            {
-                try
-                {
+            InvokeOnMain(() => {
+                try {
                     content.Save();
-                    ResourceCache.ReloadResourceWithDependencies("Shaders/GLSL/"+ PreivewContent.Subfolder +"/_temp.glsl");
+                    ResourceCache.ReloadResourceWithDependencies("Shaders/GLSL/" + PreivewContent.Subfolder + "/_temp.glsl");
                     ResourceCache.ReloadResourceWithDependencies("Techniques/" + PreivewContent.Subfolder + "/_temp.xml");
                     ResourceCache.ReloadResourceWithDependencies("Materials/" + PreivewContent.Subfolder + "/_temp.xml");
-                    if (PreviewNode == null)
-                    {
+                    if (PreviewNode == null) {
                         CreateSceneImpl();
                         SetupViewport();
                     }
-                }
-                catch (Exception ex)
-                {
+                } catch (Exception ex) {
                     OnError?.Invoke(this, new OnErrorEventArgs(ex));
                 }
             });
         }
 
-        protected override void Start()
-        {
+        protected override void Start() {
             MonoDebugHud = new MonoDebugHud(this);
             MonoDebugHud.Show();
             Input.MouseWheel += Input_MouseWheel;
@@ -91,24 +78,20 @@ namespace Urho3DMaterialEditor.Model
             _animatedModel = false;
         }
 
-        protected override void Stop()
-        {
+        protected override void Stop() {
             Input.MouseWheel -= Input_MouseWheel;
             base.Stop();
         }
 
-        public void CreateScene(LightType lightType)
-        {
+        public void CreateScene(LightType lightType) {
             _lightType = lightType;
-            InvokeOnMain(() =>
-            {
+            InvokeOnMain(() => {
                 CreateSceneImpl();
                 SetupViewport();
             });
         }
 
-        private void CreateSceneImpl()
-        {
+        private void CreateSceneImpl() {
             var cache = ResourceCache;
             _scene = new Scene();
             // scene.CreateComponent<Octree>();  scene.CreateComponent<Camera>();
@@ -139,26 +122,21 @@ namespace Urho3DMaterialEditor.Model
             PreviewNode = _scene.CreateChild("Preview");
 
             StaticModel modelComponent;
-            if (_animatedModel)
-            {
+            if (_animatedModel) {
                 var animatedModel = PreviewNode.CreateComponent<AnimatedModel>();
                 animatedModel.Model = _model;
                 modelComponent = animatedModel;
-                if (_animation != null)
-                {
+                if (_animation != null) {
                     var state = animatedModel.AddAnimationState(_animation);
                     state.Weight = 1.0f;
                     state.Looped = true;
                 }
-            }
-            else
-            {
+            } else {
                 modelComponent = PreviewNode.CreateComponent<StaticModel>();
                 modelComponent.Model = _model;
             }
 
-            if (_model != null)
-            {
+            if (_model != null) {
                 modelComponent.SetMaterial(ResourceCache.GetMaterial("Materials/" + PreivewContent.Subfolder + "/_temp.xml", false));
                 bb = _model.BoundingBox;
             }
@@ -209,25 +187,19 @@ namespace Urho3DMaterialEditor.Model
         public event EventHandler<NodeListUpdatedArgs> NodeListUpdated;
         public event EventHandler<EventArgs> CameraDistanceUpdated;
 
-        private void NotifyNodes()
-        {
+        private void NotifyNodes() {
             NodeListUpdated?.Invoke(this, new NodeListUpdatedArgs(_scene));
         }
-        private void NotifyCameraDistance()
-        {
+        private void NotifyCameraDistance() {
             CameraDistanceUpdated?.Invoke(this, EventArgs.Empty);
         }
-        public void LoadScene(string scene)
-        {
+        public void LoadScene(string scene) {
             _scene = new Scene();
             _scene.LoadXml(scene);
             var camera = _scene.GetComponent<Camera>(true);
-            if (camera != null)
-            {
+            if (camera != null) {
                 CameraNode = camera.Node;
-            }
-            else
-            {
+            } else {
                 CameraNode = new Node();
                 CameraNode.CreateComponent<Camera>();
                 _scene.AddChild(CameraNode);
@@ -240,10 +212,8 @@ namespace Urho3DMaterialEditor.Model
             NotifyNodes();
         }
 
-        private void LoadMDL(string mdl)
-        {
-            InvokeOnMain(() =>
-            {
+        private void LoadMDL(string mdl) {
+            InvokeOnMain(() => {
                 _model = ResourceCache.GetModel(mdl, false);
                 _animatedModel = false;
                 _animation = null;
@@ -252,10 +222,8 @@ namespace Urho3DMaterialEditor.Model
             });
         }
 
-        private void LoadAnimatedMDL(string mdl, string animation)
-        {
-            InvokeOnMain(() =>
-            {
+        private void LoadAnimatedMDL(string mdl, string animation) {
+            InvokeOnMain(() => {
                 _model = ResourceCache.GetModel(mdl, false);
                 _animatedModel = true;
                 if (string.IsNullOrWhiteSpace(animation))
@@ -267,8 +235,7 @@ namespace Urho3DMaterialEditor.Model
             });
         }
 
-        private void SetupViewport(string renderPath = null)
-        {
+        private void SetupViewport(string renderPath = null) {
             var renderer = Renderer;
             renderer.ShadowQuality = _shadowQuality;
             var rp = new RenderPath();
@@ -279,21 +246,20 @@ namespace Urho3DMaterialEditor.Model
             renderer.SetViewport(0, new Viewport(Context, _scene, CameraNode.GetComponent<Camera>(), rp));
         }
 
-        protected override void OnUpdate(float timeStep)
-        {
+        protected override void OnUpdate(float timeStep) {
             if (PreviewNode == null)
                 return;
 
             if (isRotate)
                 PreviewNode.Rotate(Quaternion.FromAxisAngle(Vector3.Up, timeStep * 10.0f));
+
             base.OnUpdate(timeStep);
 
             MoveCamera2D(timeStep);
             MoveCamera3D(timeStep);
 
             var animModel = PreviewNode.GetComponent<AnimatedModel>();
-            if (animModel != null && animModel.NumAnimationStates > 0)
-            {
+            if (animModel != null && animModel.NumAnimationStates > 0) {
                 var state = animModel.AnimationStates.First();
                 state.AddTime(timeStep);
             }
@@ -301,42 +267,33 @@ namespace Urho3DMaterialEditor.Model
 
         public event EventHandler<OnErrorEventArgs> OnError;
 
-        public void SetRenderPath(string renderpath)
-        {
+        public void SetRenderPath(string renderpath) {
             InvokeOnMain(() => { SetupViewport(renderpath); });
         }
 
-        public void SetShadowQuality(ShadowQuality shadowQuality)
-        {
+        public void SetShadowQuality(ShadowQuality shadowQuality) {
             InvokeOnMain(() => { Renderer.ShadowQuality = _shadowQuality = shadowQuality; });
         }
 
-        public void OpenScene(string file)
-        {
-            InvokeOnMain(() =>
-            {
+        public void OpenScene(string file) {
+            InvokeOnMain(() => {
                 LoadScene(file);
                 SetupViewport();
             });
         }
 
-        public void LoadModel(string file)
-        {
+        public void LoadModel(string file) {
             InvokeOnMain(() => { LoadMDL(file); });
         }
 
-        public void LoadAnimatedModel(string file, string animation)
-        {
+        public void LoadAnimatedModel(string file, string animation) {
             InvokeOnMain(() => { LoadAnimatedMDL(file, animation); });
         }
 
-        public void SelectNode(NodeListUpdatedArgs.NodeInfo nodeInfo)
-        {
-            InvokeOnMain(() =>
-            {
+        public void SelectNode(NodeListUpdatedArgs.NodeInfo nodeInfo) {
+            InvokeOnMain(() => {
                 PreviewNode = _scene.GetNode(nodeInfo.ID);
-                if (PreviewNode != null)
-                {
+                if (PreviewNode != null) {
                     var mat = ResourceCache.GetMaterial("Materials/_temp.xml");
                     var model = PreviewNode.GetComponent<StaticModel>();
                     if (model != null) model.SetMaterial(mat);
@@ -346,8 +303,7 @@ namespace Urho3DMaterialEditor.Model
             });
         }
 
-        protected void MoveCamera2D(float timeStep)
-        {
+        protected void MoveCamera2D(float timeStep) {
             //if (UI.FocusElement != null) return;
 
             //const float moveSpeed = 1.0f;
@@ -379,8 +335,7 @@ namespace Urho3DMaterialEditor.Model
             //}
         }
 
-        private void Input_MouseWheel(MouseWheelEventArgs obj)
-        {
+        private void Input_MouseWheel(MouseWheelEventArgs obj) {
             if (obj.Wheel > 0)
                 CameraDistance = CameraDistance * 0.9f;
             else
@@ -389,13 +344,11 @@ namespace Urho3DMaterialEditor.Model
             UpdateCameraPos();
         }
 
-        protected void MoveCamera3D(float timeStep)
-        {
+        protected async void MoveCamera3D(float timeStep) {
             //if (UI.FocusElement != null)  return;
 
-            if (!Input.GetMouseButtonDown(MouseButton.Left))
-            {
-                if (Input.GetMouseButtonDown(MouseButton.Right)) isRotate = !isRotate;
+            if (!Input.GetMouseButtonDown(MouseButton.Left)) {
+                if (Input.GetMouseButtonDown(MouseButton.Right) && !lockRot) await ToggleRotate();
                 return;
             }
 
@@ -407,40 +360,41 @@ namespace Urho3DMaterialEditor.Model
             UpdateCameraPos();
         }
 
-        private void UpdateCameraPos()
-        {
+        bool lockRot=false;
+        private async Task ToggleRotate() {
+            lockRot = true;
+            isRotate = !isRotate; 
+            await CameraNode.RunActionsAsync(new DelayTime(.1f));
+            lockRot = false;
+        }
+
+        private void UpdateCameraPos() {
             CameraNode.Rotation = new Quaternion(Pitch, Yaw, 0);
             var forward = CameraNode.WorldDirection;
             CameraNode.Position = CameraTarget - forward * CameraDistance;
             var camera = CameraNode.GetComponent<Camera>();
-            if (camera != null)
-            {
+            if (camera != null) {
                 camera.NearClip = CameraDistance * 0.25f;
                 camera.FarClip = CameraDistance * 8.0f;
             }
 
         }
 
-        public class NodeListUpdatedArgs : EventArgs
-        {
+        public class NodeListUpdatedArgs : EventArgs {
             public List<NodeInfo> Nodes = new List<NodeInfo>();
 
-            public NodeListUpdatedArgs(Scene scene)
-            {
+            public NodeListUpdatedArgs(Scene scene) {
                 foreach (var sceneChild in scene.Children) AddNode(sceneChild);
             }
 
-            private void AddNode(Node node)
-            {
+            private void AddNode(Node node) {
                 if (node.HasComponent(new StringHash("StaticModel")) ||
                     node.HasComponent(new StringHash("AnimatedModel"))) Nodes.Add(new NodeInfo(node));
                 foreach (var child in node.Children) AddNode(child);
             }
 
-            public class NodeInfo
-            {
-                public NodeInfo(Node node)
-                {
+            public class NodeInfo {
+                public NodeInfo(Node node) {
                     Name = node.Name;
                     ID = node.ID;
                 }
@@ -448,17 +402,14 @@ namespace Urho3DMaterialEditor.Model
                 public string Name { get; }
                 public uint ID { get; }
 
-                public override string ToString()
-                {
+                public override string ToString() {
                     return string.Format("{0}: {1}", ID, Name ?? "Node " + ID);
                 }
             }
         }
 
-        public class OnErrorEventArgs : EventArgs
-        {
-            public OnErrorEventArgs(Exception ex)
-            {
+        public class OnErrorEventArgs : EventArgs {
+            public OnErrorEventArgs(Exception ex) {
                 Exception = ex;
             }
 

@@ -5,10 +5,8 @@ using Toe.Scripting;
 using Urho;
 using Urho3DMaterialEditor.Model;
 
-namespace Urho3DMaterialEditor.ShaderExpressions
-{
-    public class ExpressionConverter
-    {
+namespace Urho3DMaterialEditor.ShaderExpressions {
+    public class ExpressionConverter {
         private static readonly Dictionary<Type, string> PinTypeByType = new Dictionary<Type, string>
         {
             {typeof(bool), PinTypes.Bool},
@@ -25,70 +23,58 @@ namespace Urho3DMaterialEditor.ShaderExpressions
 
         private Dictionary<Expression, NodeAndPin> _visitedNodes = new Dictionary<Expression, NodeAndPin>();
 
-        private ExpressionConverter(Script script)
-        {
+        private ExpressionConverter(Script script) {
             _script = script;
         }
 
-        public static Script Convert<R>(Expression<Func<R>> expression)
-        {
-            return Convert((LambdaExpression) expression);
+        public static Script Convert<R>(Expression<Func<R>> expression) {
+            return Convert((LambdaExpression)expression);
         }
 
-        public static Script Convert<T1, R>(Expression<Func<T1, R>> expression)
-        {
-            return Convert((LambdaExpression) expression);
+        public static Script Convert<T1, R>(Expression<Func<T1, R>> expression) {
+            return Convert((LambdaExpression)expression);
         }
 
-        public static Script Convert<T1, T2, R>(Expression<Func<T1, T2, R>> expression)
-        {
-            return Convert((LambdaExpression) expression);
+        public static Script Convert<T1, T2, R>(Expression<Func<T1, T2, R>> expression) {
+            return Convert((LambdaExpression)expression);
         }
 
-        public static Script Convert(LambdaExpression lambda)
-        {
+        public static Script Convert(LambdaExpression lambda) {
             var script = new Script();
             var converter = new ExpressionConverter(script);
             converter.Visit(lambda);
             return script;
         }
 
-        private void Visit(LambdaExpression lambda)
-        {
+        private void Visit(LambdaExpression lambda) {
             var returnType = GetPinType(lambda.ReturnType);
-            foreach (var parameterExpression in lambda.Parameters)
-            {
+            foreach (var parameterExpression in lambda.Parameters) {
                 var e = GetPinType(parameterExpression.Type);
             }
 
             var result = Visit(lambda.Body);
         }
 
-        private NodeAndPin Visit(Expression expression)
-        {
-            switch (expression.NodeType)
-            {
+        private NodeAndPin Visit(Expression expression) {
+            switch (expression.NodeType) {
                 case ExpressionType.Add:
-                    return VisitAdd((BinaryExpression) expression);
+                    return VisitAdd((BinaryExpression)expression);
                 default:
                     throw new NotImplementedException(expression.NodeType + " is not implemented yet");
             }
         }
 
-        private BinaryOp VisitBinaryExpression(BinaryExpression expression)
-        {
-            return new BinaryOp {Left = Visit(expression.Left), Right = Visit(expression.Right)};
+        private BinaryOp VisitBinaryExpression(BinaryExpression expression) {
+            return new BinaryOp { Left = Visit(expression.Left), Right = Visit(expression.Right) };
         }
 
-        private NodeAndPin VisitAdd(BinaryExpression expression)
-        {
+        private NodeAndPin VisitAdd(BinaryExpression expression) {
             var args = VisitBinaryExpression(expression);
             if (args.Left.Pin.Type != args.Right.Pin.Type)
                 throw new NotImplementedException("" + args.Left.Pin.Type + "+" + args.Right.Pin.Type +
                                                   " is not implemented");
             string nodeType = null;
-            switch (args.Left.Pin.Type)
-            {
+            switch (args.Left.Pin.Type) {
                 case PinTypes.Float:
                     nodeType = NodeTypes.AddFloatFloat;
                     break;
@@ -113,16 +99,14 @@ namespace Urho3DMaterialEditor.ShaderExpressions
             return new NodeAndPin(node, node.OutputPins[0]);
         }
 
-        private string GetPinType(Type parameterExpressionType)
-        {
+        private string GetPinType(Type parameterExpressionType) {
             string type;
             if (PinTypeByType.TryGetValue(parameterExpressionType, out type)) return type;
 
             throw new KeyNotFoundException(parameterExpressionType + " is not supported in a shader");
         }
 
-        private struct BinaryOp
-        {
+        private struct BinaryOp {
             public NodeAndPin Left;
             public NodeAndPin Right;
         }

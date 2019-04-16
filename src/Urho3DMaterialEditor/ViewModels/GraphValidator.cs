@@ -5,30 +5,24 @@ using Toe.Scripting.WPF.ViewModels;
 using Urho3DMaterialEditor.Model;
 using Urho3DMaterialEditor.Model.Templates;
 
-namespace Urho3DMaterialEditor.ViewModels
-{
-    public class GraphValidator
-    {
+namespace Urho3DMaterialEditor.ViewModels {
+    public class GraphValidator {
         private readonly Lazy<MainViewModel> _mainVm;
         private readonly MaterialNodeRegistry _nodeRegistry;
 
-        public GraphValidator(Lazy<MainViewModel> mainVM, MaterialNodeRegistry nodeRegistry)
-        {
+        public GraphValidator(Lazy<MainViewModel> mainVM, MaterialNodeRegistry nodeRegistry) {
             _mainVm = mainVM;
             _nodeRegistry = nodeRegistry;
         }
 
-        public MaterialCompilationException Validate(ScriptViewModel script)
-        {
+        public MaterialCompilationException Validate(ScriptViewModel script) {
             var _samplers = new Dictionary<string, NodeViewModel>();
             var _defines = new Dictionary<string, NodeViewModel>();
             var _undefines = new Dictionary<string, NodeViewModel>();
             var validPinTypes = new HashSet<string>(PinTypes.SamplerTypes.Concat(PinTypes.DataTypes));
-            foreach (var scriptNode in script.Nodes)
-            {
+            foreach (var scriptNode in script.Nodes) {
                 if (NodeTypes.IsIfDefType(scriptNode.Type) || scriptNode.Type == NodeTypes.Define ||
-                    scriptNode.Type == NodeTypes.Undefine)
-                {
+                    scriptNode.Type == NodeTypes.Undefine) {
                     if (string.IsNullOrWhiteSpace(scriptNode.Value))
                         return new MaterialCompilationException("Value is not set", scriptNode.Id);
 
@@ -36,8 +30,7 @@ namespace Urho3DMaterialEditor.ViewModels
                         return new MaterialCompilationException("Value contains whitespaces", scriptNode.Id);
                 }
 
-                if (scriptNode.Type == NodeTypes.Define)
-                {
+                if (scriptNode.Type == NodeTypes.Define) {
                     NodeViewModel conflictingDefine;
                     if (_undefines.TryGetValue(scriptNode.Value, out conflictingDefine))
                         return new MaterialCompilationException("Conflicting define found", conflictingDefine.Id,
@@ -46,8 +39,7 @@ namespace Urho3DMaterialEditor.ViewModels
                     _defines[scriptNode.Value] = scriptNode;
                 }
 
-                if (scriptNode.Type == NodeTypes.Undefine)
-                {
+                if (scriptNode.Type == NodeTypes.Undefine) {
                     NodeViewModel conflictingDefine;
                     if (_defines.TryGetValue(scriptNode.Value, out conflictingDefine))
                         return new MaterialCompilationException("Conflicting define found", conflictingDefine.Id,
@@ -56,8 +48,7 @@ namespace Urho3DMaterialEditor.ViewModels
                     _undefines[scriptNode.Value] = scriptNode;
                 }
 
-                if (NodeTypes.IsSampler(scriptNode.Type))
-                {
+                if (NodeTypes.IsSampler(scriptNode.Type)) {
                     var unitName = MaterialTemplate.GetTextureUnitName(scriptNode.Node.Name) ?? scriptNode.Node.Name;
                     NodeViewModel oldNode;
                     if (_samplers.TryGetValue(unitName, out oldNode))
@@ -73,15 +64,13 @@ namespace Urho3DMaterialEditor.ViewModels
                         return new MaterialCompilationException(
                             "Pin " + pinViewModel.Id + " has unknown type " + pinViewModel.Type, scriptNode.Id);
 
-                if (scriptNode.Node.Type != NodeTypes.Function)
-                {
+                if (scriptNode.Node.Type != NodeTypes.Function) {
                     var factories = _nodeRegistry.ResolveFactories(scriptNode.Node.Type).ToList();
                     if (factories.Count == 0)
                         return new MaterialCompilationException("Unknown node type " + scriptNode.Node.Type,
                             scriptNode.Id);
 
-                    if (factories.Count == 1)
-                    {
+                    if (factories.Count == 1) {
                         var n = factories[0].Build();
                         if (n.InputPins.Count != scriptNode.InputPins.Count)
                             return new MaterialCompilationException("Input pin doesn't match", scriptNode.Id);
@@ -90,8 +79,7 @@ namespace Urho3DMaterialEditor.ViewModels
                             return new MaterialCompilationException("Output pin doesn't match", scriptNode.Id);
 
                         foreach (var pinPair in n.InputPins.Zip(scriptNode.InputPins,
-                            (nn, ss) => new {Expected = nn, Actial = ss}))
-                        {
+                            (nn, ss) => new { Expected = nn, Actial = ss })) {
                             var actualPin = pinPair.Actial.Pin;
                             var expectedPin = pinPair.Expected;
                             if (expectedPin.Id != actualPin.Id)
@@ -105,8 +93,7 @@ namespace Urho3DMaterialEditor.ViewModels
                         }
 
                         foreach (var pinPair in n.OutputPins.Zip(scriptNode.OutputPins,
-                            (nn, ss) => new {Expected = nn, Actial = ss}))
-                        {
+                            (nn, ss) => new { Expected = nn, Actial = ss })) {
                             var actualPin = pinPair.Actial.Pin;
                             var expectedPin = pinPair.Expected;
                             if (expectedPin.Id != actualPin.Id)

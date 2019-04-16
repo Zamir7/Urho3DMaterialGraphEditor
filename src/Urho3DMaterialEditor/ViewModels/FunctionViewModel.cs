@@ -5,10 +5,8 @@ using ReactiveUI;
 using Toe.Scripting;
 using Toe.Scripting.WPF.ViewModels;
 
-namespace Urho3DMaterialEditor.ViewModels
-{
-    public class FunctionViewModel : NodeViewModel, IDisposable
-    {
+namespace Urho3DMaterialEditor.ViewModels {
+    public class FunctionViewModel : NodeViewModel, IDisposable {
         private readonly IDisposable _subscription;
         private string _value;
         public string funcHeader, funcFoot, functionTXT;
@@ -18,8 +16,7 @@ namespace Urho3DMaterialEditor.ViewModels
             set => RaiseAndSetIfChanged(ref funcHeader, value);
         }
 
-        public FunctionViewModel(ScriptViewModel script, ScriptNode node) : base(script, node)
-        {
+        public FunctionViewModel(ScriptViewModel script, ScriptNode node) : base(script, node) {
             _value = node.Value;
             _subscription = this.WhenAnyValue(_ => _.EditableValue).Throttle(TimeSpan.FromSeconds(0.25))
                 .ObserveOnDispatcher()
@@ -30,7 +27,7 @@ namespace Urho3DMaterialEditor.ViewModels
         }
 
         internal void AddPin(string val) {
-            var np = new PinWithConnection(val,val);
+            var np = new PinWithConnection(val, val);
             Node.InputPins.Add(np);
             InputPins.Add(new InputPinViewModel(this, np));
             CreateFuncTXT();
@@ -42,18 +39,17 @@ namespace Urho3DMaterialEditor.ViewModels
             FuncHeader = outP + " " + Name + " (";
             int nn = 1;
             foreach (var item in Node.InputPins) {
-                FuncHeader += item.Type + " var" + nn.ToString()+", ";
+                FuncHeader += item.Type + " var" + nn.ToString() + ", ";
                 nn++;
             }
-            FuncHeader = FuncHeader.Substring(0, FuncHeader.Length - 2)+")";
+            FuncHeader = FuncHeader.Substring(0, FuncHeader.Length - 2) + ")";
 
-            functionTXT = FuncHeader + "\n{\n" + (Value??"") + "\n" + "return "+ funcFoot+ ";\n}";
+            functionTXT = FuncHeader + "\n{\n" + (Value ?? "") + "\n" + "return " + funcFoot + ";\n}";
 
 
         }
 
-        internal void OutPin(string val)
-        {
+        internal void OutPin(string val) {
             Node.OutputPins[0].Type = val;
             //Node.OutputPins[0].Id = val;
             OutputPins.Clear();
@@ -62,10 +58,9 @@ namespace Urho3DMaterialEditor.ViewModels
             CreateFuncTXT();
         }
 
-        public string EditableValue
-        {
+        public string EditableValue {
             get => _value;
-            set => 
+            set =>
                 RaiseAndSetIfChanged(ref _value, value);
         }
 
@@ -76,13 +71,11 @@ namespace Urho3DMaterialEditor.ViewModels
             FuncHeader = "";
         }
 
-        public void Dispose()
-        {
+        public void Dispose() {
             _subscription.Dispose();
         }
 
-        private void BuildNodeValue()
-        {
+        private void BuildNodeValue() {
             Value = _value;
         }
 

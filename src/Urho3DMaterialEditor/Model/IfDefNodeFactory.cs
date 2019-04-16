@@ -1,33 +1,27 @@
 ﻿using System.Collections.Generic;
 using Toe.Scripting;
 
-namespace Urho3DMaterialEditor.Model
-{
-    public class IfDefNodeFactory : AbstractNodeFactory
-    {
+namespace Urho3DMaterialEditor.Model {
+    public class IfDefNodeFactory : AbstractNodeFactory {
         public const string Defined = "defined";
         public const string NotDefined = "not defined";
 
         private readonly string _pinType;
 
         public IfDefNodeFactory(string type, string name, string pinType) : base(type, name,
-            new[] {NodeTypes.Categories.Preprocessor})
-        {
+            new[] { NodeTypes.Categories.Preprocessor }) {
             _pinType = pinType;
         }
 
-        public override IEnumerable<string> InputTypes
-        {
+        public override IEnumerable<string> InputTypes {
             get { yield return _pinType; }
         }
 
-        public override IEnumerable<string> OutputTypes
-        {
+        public override IEnumerable<string> OutputTypes {
             get { yield return _pinType; }
         }
 
-        public override ScriptNode Build()
-        {
+        public override ScriptNode Build() {
             var node = new ScriptNode();
             node.Type = Type;
             node.Name = Name;

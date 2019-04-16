@@ -1,7 +1,5 @@
-﻿namespace Urho3DMaterialEditor.Model
-{
-    public static class PinIds
-    {
+﻿namespace Urho3DMaterialEditor.Model {
+    public static class PinIds {
         public const string Sampler = "sampler";
         public const string Value = "value";
         public const string X = "x";

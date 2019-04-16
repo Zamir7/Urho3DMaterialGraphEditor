@@ -1,7 +1,6 @@
 ﻿using System.IO;
 
-namespace Urho3DMaterialEditor.Model
-{
+namespace Urho3DMaterialEditor.Model {
     //public enum Quality
     //{
     //    Low = 0,
@@ -15,8 +14,7 @@ namespace Urho3DMaterialEditor.Model
     //    public int? LOD { get; set; }
     //}
 
-    public class PreivewContent
-    {
+    public class PreivewContent {
         public string Name { get; set; }
         public string Material { get; set; }
         public string Technique { get; set; }
@@ -29,25 +27,20 @@ namespace Urho3DMaterialEditor.Model
 
         public const string Subfolder = "Graph";
 
-        public string GetMaterialFileName()
-        {
-            return Path.Combine("Materials", Subfolder, Name + ".xml").Replace(Path.DirectorySeparatorChar,'/');
+        public string GetMaterialFileName() {
+            return Path.Combine("Materials", Subfolder, Name + ".xml").Replace(Path.DirectorySeparatorChar, '/');
         }
-        public string GetTechniqueFileName()
-        {
+        public string GetTechniqueFileName() {
             return Path.Combine("Techniques", Subfolder, Name + ".xml").Replace(Path.DirectorySeparatorChar, '/');
         }
-        public string GetGLSLFileName()
-        {
+        public string GetGLSLFileName() {
             return Path.Combine("Shaders", "GLSL", Subfolder, Name + ".glsl").Replace(Path.DirectorySeparatorChar, '/');
         }
-        public string GetHLSLFileName()
-        {
+        public string GetHLSLFileName() {
             return Path.Combine("Shaders", "HLSL", Subfolder, Name + ".hlsl").Replace(Path.DirectorySeparatorChar, '/');
         }
 
-        public void Save()
-        {
+        public void Save() {
             var materialFileName = Path.Combine(UrhoContext.DataFolder, GetMaterialFileName());
             var techniqueFileName = Path.Combine(UrhoContext.DataFolder, GetTechniqueFileName());
             var glslFileName = Path.Combine(UrhoContext.DataFolder, GetGLSLFileName());
@@ -57,7 +50,7 @@ namespace Urho3DMaterialEditor.Model
             UrhoContext.WriteAllText(hlslFileName, HLSLShader);
             UrhoContext.WriteAllText(techniqueFileName, Technique);
             UrhoContext.WriteAllText(materialFileName, Material);
-           // MainWindow.txtShadow = GLSLShader;
+            // MainWindow.txtShadow = GLSLShader;
         }
     }
 }

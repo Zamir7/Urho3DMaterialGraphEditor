@@ -1,10 +1,8 @@
 ﻿using System.Collections.Generic;
 using Toe.Scripting;
 
-namespace Urho3DMaterialEditor.Model
-{
-    public class SamplerNodeFactory : AbstractNodeFactory
-    {
+namespace Urho3DMaterialEditor.Model {
+    public class SamplerNodeFactory : AbstractNodeFactory {
         public const string Diffuse = "diffuse";
         public const string DiffuseCubeMap = "diffuseCubeMap";
         public const string Normal = "normal";
@@ -20,10 +18,8 @@ namespace Urho3DMaterialEditor.Model
         public const string ZoneCubeMap = "zoneCubeMap";
         private readonly string _outputType;
 
-        public SamplerNodeFactory(string name, string samplerType) : base(samplerType, name, "Samplers")
-        {
-            switch (Type)
-            {
+        public SamplerNodeFactory(string name, string samplerType) : base(samplerType, name, "Samplers") {
+            switch (Type) {
                 case NodeTypes.Sampler2D:
                     _outputType = PinTypes.Sampler2D;
                     break;
@@ -36,14 +32,12 @@ namespace Urho3DMaterialEditor.Model
             }
         }
 
-        public override IEnumerable<string> OutputTypes
-        {
+        public override IEnumerable<string> OutputTypes {
             get { yield return _outputType; }
         }
 
 
-        public override ScriptNode Build()
-        {
+        public override ScriptNode Build() {
             var node = new ScriptNode();
             node.Type = Type;
             node.Name = Name;

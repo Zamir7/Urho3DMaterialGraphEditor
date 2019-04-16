@@ -25,10 +25,8 @@ using Urho;
 using Urho3DMaterialEditor.Model;
 using Urho3DMaterialEditor.Views;
 
-namespace Urho3DMaterialEditor.ViewModels
-{
-    public class MainViewModel : ViewModelBase, IDisposable
-    {
+namespace Urho3DMaterialEditor.ViewModels {
+    public class MainViewModel : ViewModelBase, IDisposable {
         private readonly ConfigurationRepository<AppConfiguration> _config;
         private readonly UrhoContext _context;
         private readonly ShaderGenerator _generator;
@@ -56,8 +54,7 @@ namespace Urho3DMaterialEditor.ViewModels
         private IObserver<INodeFactory> _testFactory;
 
         public MainViewModel(ScriptViewModel scriptViewModel, ShaderGenerator generator, UrhoContext context,
-            GraphValidator validator, ConfigurationRepository<AppConfiguration> config)
-        {
+            GraphValidator validator, ConfigurationRepository<AppConfiguration> config) {
             _backgroundScheduler = new EventLoopScheduler();
             _disposables.Add(_backgroundScheduler);
             _generator = generator;
@@ -100,9 +97,9 @@ namespace Urho3DMaterialEditor.ViewModels
             New();
         }
 
-         private void ToCenter() {
-            var pn= ScriptViewModel.Nodes.Select(x => x.Position);
- 
+        private void ToCenter() {
+            var pn = ScriptViewModel.Nodes.Select(x => x.Position);
+
             var minX = pn.Select(x => x.X).Min();
             var maxX = pn.Select(x => x.X).Max();
             var minY = pn.Select(x => x.Y).Min();
@@ -116,14 +113,13 @@ namespace Urho3DMaterialEditor.ViewModels
             ScriptViewModel.ScaleMatrix = new Matrix(zoo, 0, 0, zoo, 0, 0);
 
             foreach (var item in ScriptViewModel.Nodes) {
-                item.Position-= new Vector(minX, minY);
+                item.Position -= new Vector(minX, minY);
             }
-            ScriptViewModel.Position = new Point(screenWidth / aX/2, screenHeght / aY/2);
+            ScriptViewModel.Position = new Point(screenWidth / aX / 2, screenHeght / aY / 2);
 
         }
 
-        public float CameraDistance
-        {
+        public float CameraDistance {
             get => _cameraDistance;
             set => RaiseAndSetIfChanged(ref _cameraDistance, value);
         }
@@ -145,7 +141,7 @@ namespace Urho3DMaterialEditor.ViewModels
 
         public ICommand RearrangeCommand => _rearrangeCommand;
         public ICommand CenterGraphCommand => _centerGraphCommand;
-        
+
         public ScriptingCommand SaveAsCommand { get; set; }
         public ScriptingCommand ExportCommand { get; set; }
 
@@ -161,25 +157,20 @@ namespace Urho3DMaterialEditor.ViewModels
         public ScriptingCommand SetResourcePathCommand { get; set; }
         public ScriptingCommand ExitCommand { get; set; }
 
-        public string FileName
-        {
+        public string FileName {
             get => _fileName;
-            set
-            {
+            set {
                 RaiseAndSetIfChanged(ref _fileName, value);
                 SaveCommand.CanExecute = _fileName != null;
             }
         }
-        public string GLSLSource
-        {
+        public string GLSLSource {
             get => _glslshader;
-            set
-            {
+            set {
                 RaiseAndSetIfChanged(ref _glslshader, value);
             }
         }
-        public string Status
-        {
+        public string Status {
             get => _status;
             set => RaiseAndSetIfChanged(ref _status, value ?? "");
         }
@@ -190,50 +181,40 @@ namespace Urho3DMaterialEditor.ViewModels
 
         public ScriptViewModel ScriptViewModel { get; }
 
-        public PreviewApplication Application
-        {
+        public PreviewApplication Application {
             get => _application;
-            set
-            {
-                if (_application != value)
-                {
-                    if (_application != null)
-                    {
+            set {
+                if (_application != value) {
+                    if (_application != null) {
                         _application.NodeListUpdated -= OnApplicationOnNodeListUpdated;
                         _application.CameraDistanceUpdated -= OnApplicationOnCameraDistanceUpdated;
                     }
                     _application = value;
-                    if (_application != null)
-                    {
+                    if (_application != null) {
                         _application.NodeListUpdated += OnApplicationOnNodeListUpdated;
                         _application.CameraDistanceUpdated += OnApplicationOnCameraDistanceUpdated;
-                        _preview.OnNext(new PreviewData {Script = ScriptViewModel.Script?.Clone()});
+                        _preview.OnNext(new PreviewData { Script = ScriptViewModel.Script?.Clone() });
                     }
                 }
             }
         }
 
-        private void OnApplicationOnCameraDistanceUpdated(object s, EventArgs a)
-        {
+        private void OnApplicationOnCameraDistanceUpdated(object s, EventArgs a) {
             Dispatcher.CurrentDispatcher.Invoke(() => UpdateCameraDistance());
         }
 
-        private void OnApplicationOnNodeListUpdated(object s, PreviewApplication.NodeListUpdatedArgs a)
-        {
-            Dispatcher.CurrentDispatcher.Invoke(()=>UpdateNodes(a.Nodes));
+        private void OnApplicationOnNodeListUpdated(object s, PreviewApplication.NodeListUpdatedArgs a) {
+            Dispatcher.CurrentDispatcher.Invoke(() => UpdateNodes(a.Nodes));
         }
 
-        public IList<SceneNodeViewModel> Nodes
-        {
+        public IList<SceneNodeViewModel> Nodes {
             get => _nodes;
             set => RaiseAndSetIfChanged(ref _nodes, value);
         }
 
-        public SceneNodeViewModel SelectedNode
-        {
+        public SceneNodeViewModel SelectedNode {
             get => _node;
-            set
-            {
+            set {
                 if (RaiseAndSetIfChanged(ref _node, value)) _application.SelectNode(_node.Info);
             }
         }
@@ -241,13 +222,11 @@ namespace Urho3DMaterialEditor.ViewModels
         public double screenWidth { get; set; }
         public double screenHeght { get; set; }
 
-        public void Dispose()
-        {
+        public void Dispose() {
             _disposables.Dispose();
         }
 
-        private void TestPerformance()
-        {
+        private void TestPerformance() {
             var watch = new Stopwatch();
             watch.Start();
             for (var i = 0; i < 50; ++i) GenerateMaterial("_temp", ScriptViewModel.Script);
@@ -255,23 +234,19 @@ namespace Urho3DMaterialEditor.ViewModels
             MessageBox.Show(watch.Elapsed.ToString(), "Time", MessageBoxButton.OK);
         }
 
-        private void OnScriptViewModelOnScriptChanged(object s, ScriptChangedEventArgs a)
-        {
-            _preview.OnNext(new PreviewData {Script = ScriptViewModel.Script?.Clone()});
+        private void OnScriptViewModelOnScriptChanged(object s, ScriptChangedEventArgs a) {
+            _preview.OnNext(new PreviewData { Script = ScriptViewModel.Script?.Clone() });
         }
 
-        private void OnScriptViewModelOnSelectionChanged(object s, EventArgs a)
-        {
+        private void OnScriptViewModelOnSelectionChanged(object s, EventArgs a) {
             if (!GenerateTempMaterialForLink())
-                if (_currentPreviewPin != null)
-                {
+                if (_currentPreviewPin != null) {
                     _currentPreviewPin = null;
-                    _preview.OnNext(new PreviewData {Script = ScriptViewModel.Script?.Clone()});
+                    _preview.OnNext(new PreviewData { Script = ScriptViewModel.Script?.Clone() });
                 }
         }
 
-        private void TestNodes()
-        {
+        private void TestNodes() {
             _testSubscription.Disposable =
                 Observable
                     .Timer(DateTimeOffset.Now, TimeSpan.FromSeconds(2))
@@ -280,23 +255,18 @@ namespace Urho3DMaterialEditor.ViewModels
                     .Subscribe(TestFactory);
         }
 
-        public void TestFactory(INodeFactory factory)
-        {
+        public void TestFactory(INodeFactory factory) {
             Trace.WriteLine(factory);
         }
 
-        private void TestAllNodeTypes()
-        {
-            foreach (var factory in ScriptViewModel.Registry)
-            {
+        private void TestAllNodeTypes() {
+            foreach (var factory in ScriptViewModel.Registry) {
                 var name = factory.Name;
             }
         }
 
-        public void Exit()
-        {
-            if (ScriptViewModel.HasUnsavedChanged)
-            {
+        public void Exit() {
+            if (ScriptViewModel.HasUnsavedChanged) {
                 var res = MessageBox.Show("You may have unsaved changes.\nDo you want to exit the application anyway?",
                     "Unsaved changes", MessageBoxButton.OKCancel, MessageBoxImage.Exclamation);
                 if (res != MessageBoxResult.OK)
@@ -306,55 +276,44 @@ namespace Urho3DMaterialEditor.ViewModels
             Environment.Exit(0);
         }
 
-        private void SetResourcePath()
-        {
+        private void SetResourcePath() {
             var vm = new AppFoldersViewModel(_config);
             var dialog = new AppFoldersDialog(vm);
             if (dialog.ShowDialog() == true) vm.Apply();
         }
 
-        private void RunScriptAnalizer()
-        {
-            try
-            {
+        private void RunScriptAnalizer() {
+            try {
                 var script = ScriptViewModel.Script;
                 var s = new ScriptHelper<TranslatedMaterialGraph.NodeInfo>(script);
                 TranslatedMaterialGraph.Preprocess(s);
                 var scriptAnalyser = TranslatedMaterialGraph.Translate(s);
                 new ScriptDialog(scriptAnalyser.Script.BuildScript()).ShowDialog();
-            }
-            catch (MaterialCompilationException exception)
-            {
+            } catch (MaterialCompilationException exception) {
                 Trace.WriteLine(exception);
             }
         }
 
-        private void Merge()
-        {
+        private void Merge() {
             var file = _context.PickFile("MaterialGraphs", "json");
-            if (file != null)
-            {
+            if (file != null) {
                 FileName = file.Absolute;
                 var script = JsonConvert.DeserializeObject<Script>(_context.ReadAllText(file.Absolute));
                 ScriptViewModel.MergeWith(script);
             }
         }
 
-        private void SetShadowQuality(string shadowQuality)
-        {
-            _application.SetShadowQuality((ShadowQuality) Enum.Parse(typeof(ShadowQuality), shadowQuality));
+        private void SetShadowQuality(string shadowQuality) {
+            _application.SetShadowQuality((ShadowQuality)Enum.Parse(typeof(ShadowQuality), shadowQuality));
         }
 
-        private void SetRenderPath(string renderPath)
-        {
+        private void SetRenderPath(string renderPath) {
             _application.SetRenderPath("RenderPaths/" + renderPath + ".xml");
         }
 
-        private void SaveAs()
-        {
+        private void SaveAs() {
             var file = _context.PickSaveFile("MaterialGraphs", "json");
-            if (file != null)
-            {
+            if (file != null) {
                 var path = file.Absolute;
                 //if (File.Exists(path))
                 //{
@@ -365,28 +324,22 @@ namespace Urho3DMaterialEditor.ViewModels
                 FileName = path;
                 _context.WriteAllText(FileName,
                     JsonConvert.SerializeObject(ScriptViewModel.Script, Formatting.Indented,
-                        new JsonSerializerSettings {TypeNameHandling = TypeNameHandling.None}));
+                        new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.None }));
                 GenerateMaterial(Path.GetFileNameWithoutExtension(file.Absolute), ScriptViewModel.Script)?.Save();
             }
         }
 
-        private void Export()
-        {
+        private void Export() {
             var dialog = new SaveFileDialog();
             dialog.Filter = "Zip archive (*.zip) | *.zip";
             var res = dialog.ShowDialog();
-            if (res == true)
-            {
+            if (res == true) {
                 var path = dialog.FileName;
-                using (var fileStream = _context.CreateFile(path))
-                {
+                using (var fileStream = _context.CreateFile(path)) {
                     string name;
-                    if (FileName != null)
-                    {
+                    if (FileName != null) {
                         name = Path.GetFileNameWithoutExtension(FileName);
-                    }
-                    else
-                    {
+                    } else {
                         name = Path.GetFileNameWithoutExtension(dialog.FileName);
                     }
 
@@ -394,47 +347,38 @@ namespace Urho3DMaterialEditor.ViewModels
                 }
             }
         }
-        private void SaveSelectedAs()
-        {
-            var file = _context.PickSaveFile( UrhoContext.MaterialGraphs, "json");
+        private void SaveSelectedAs() {
+            var file = _context.PickSaveFile(UrhoContext.MaterialGraphs, "json");
             if (file != null)
                 _context.WriteAllText(file.Absolute,
                     JsonConvert.SerializeObject(ScriptViewModel.ExtractSelected(), Formatting.Indented,
-                        new JsonSerializerSettings {TypeNameHandling = TypeNameHandling.None}));
+                        new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.None }));
         }
 
-        private void Save()
-        {
-            if (FileName == null)
-            {
+        private void Save() {
+            if (FileName == null) {
                 SaveAs();
-            }
-            else
-            {
+            } else {
                 _context.WriteAllText(FileName,
                     JsonConvert.SerializeObject(ScriptViewModel.Script, Formatting.Indented,
-                        new JsonSerializerSettings {TypeNameHandling = TypeNameHandling.None}));
+                        new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.None }));
                 GenerateMaterial(Path.GetFileNameWithoutExtension(FileName), ScriptViewModel.Script)?.Save();
             }
         }
 
-        private void Open()
-        {
+        private void Open() {
             var file = _context.PickFile("MaterialGraphs", "json");
-            if (file != null)
-            {
+            if (file != null) {
                 FileName = file.Absolute;
                 ScriptViewModel.Script = JsonConvert.DeserializeObject<Script>(_context.ReadAllText(file.Absolute),
-                    new JsonSerializerSettings {MissingMemberHandling = MissingMemberHandling.Ignore});
+                    new JsonSerializerSettings { MissingMemberHandling = MissingMemberHandling.Ignore });
                 ScriptViewModel.ResetUndoStack();
                 ScriptViewModel.HasUnsavedChanged = false;
             }
         }
 
-        private void OpenScene(string sceneType)
-        {
-            switch (sceneType)
-            {
+        private void OpenScene(string sceneType) {
+            switch (sceneType) {
                 case "Point":
                     Application.CreateScene(LightType.Point);
                     return;
@@ -450,24 +394,20 @@ namespace Urho3DMaterialEditor.ViewModels
             if (file != null) Application.OpenScene(file.Absolute);
         }
 
-        private void OpenMDL(string mdl)
-        {
+        private void OpenMDL(string mdl) {
             var file = _context.PickFile("Models", "mdl");
             if (file != null) Application.LoadModel(file.Relative);
         }
 
-        private void OpenAnimatedMDL(string mdl)
-        {
+        private void OpenAnimatedMDL(string mdl) {
             var file = _context.PickFile("Models", "mdl");
-            if (file != null)
-            {
+            if (file != null) {
                 var animation = _context.PickFile("Animations", "ani");
                 Application.LoadAnimatedModel(file.Relative, animation.Relative);
             }
         }
 
-        private void NewEmpty()
-        {
+        private void NewEmpty() {
             var script = new Script();
             ScriptViewModel.Script = script;
 
@@ -476,8 +416,7 @@ namespace Urho3DMaterialEditor.ViewModels
             FileName = null;
         }
 
-        private void New()
-        {
+        private void New() {
             var script = MaterialNodeRegistry.ReadScriptResource("Urho3DMaterialEditor.Data.NewMaterial.json");
             ScriptViewModel.Script = script;
 
@@ -486,8 +425,7 @@ namespace Urho3DMaterialEditor.ViewModels
             FileName = null;
         }
 
-        private bool GenerateTempMaterialForLink()
-        {
+        private bool GenerateTempMaterialForLink() {
             if (ScriptViewModel.NumSelectedItems != 1) return false;
             var link = ScriptViewModel.GetSelectedItems().First() as LinkViewModel;
             if (link == null) return false;
@@ -495,8 +433,7 @@ namespace Urho3DMaterialEditor.ViewModels
             var pin = link.From as PinViewModel;
             if (pin == null) return false;
 
-            switch (pin.Type)
-            {
+            switch (pin.Type) {
                 case PinTypes.Float:
                 case PinTypes.Vec2:
                 case PinTypes.Vec3:
@@ -510,8 +447,7 @@ namespace Urho3DMaterialEditor.ViewModels
                 case PinTypes.Ivec3:
                 case PinTypes.Ivec4:
                     _currentPreviewPin = pin;
-                    _preview.OnNext(new PreviewData
-                    {
+                    _preview.OnNext(new PreviewData {
                         Script = ScriptViewModel.Script?.Clone(),
                         PreviewPin = new Connection(pin.Node.Id, pin.Id)
                     });
@@ -521,63 +457,52 @@ namespace Urho3DMaterialEditor.ViewModels
             return false;
         }
 
-        protected void HandleError(MaterialCompilationException ex)
-        {
+        protected void HandleError(MaterialCompilationException ex) {
             CleanErrors();
-            if (ex != null)
-            {
+            if (ex != null) {
                 var failedNodes = new HashSet<int>(ex.Pins.Select(_ => _.NodeId));
                 foreach (var item in ScriptViewModel.Nodes.Where(_ => failedNodes.Contains(_.Id)))
                     item.Error = ex.InnerException?.Message ?? ex.Message;
             }
         }
 
-        internal PreivewContent GenerateMaterial(string name, Script script, Connection previewPin = null)
-        {
+        internal PreivewContent GenerateMaterial(string name, Script script, Connection previewPin = null) {
             {
                 var ex = _validator.Validate(ScriptViewModel);
-                if (ex != null)
-                {
+                if (ex != null) {
                     _errors.OnNext(ex);
                     return null;
                 }
             }
 
             if (script != null)
-                try
-                {
+                try {
                     var res = _generator.Generate(script, name, previewPin);
                     Dispatcher.CurrentDispatcher.Invoke(() => this.GLSLSource = res?.GLSLShader);
                     _errors.OnNext(null);
                     return res;
-                }
-                catch (MaterialCompilationException ex)
-                {
+                } catch (MaterialCompilationException ex) {
                     _errors.OnNext(ex);
                 }
 
             return null;
         }
 
-        private void CleanErrors()
-        {
+        private void CleanErrors() {
             foreach (var item in ScriptViewModel.Nodes) item.Error = null;
             foreach (var item in ScriptViewModel.Groups) item.ErrorNode = null;
             ScriptViewModel.ErrorNode = null;
         }
 
-        private void UpdateNodes(List<PreviewApplication.NodeListUpdatedArgs.NodeInfo> nodes)
-        {
+        private void UpdateNodes(List<PreviewApplication.NodeListUpdatedArgs.NodeInfo> nodes) {
             Nodes = nodes.Select(_ => new SceneNodeViewModel(_)).ToList();
         }
 
-        private void UpdateCameraDistance()
-        {
+        private void UpdateCameraDistance() {
             CameraDistance = Application?.CameraDistance ?? 0.0f;
         }
 
-        internal class PreviewData
-        {
+        internal class PreviewData {
             public Connection PreviewPin;
             public Script Script;
         }

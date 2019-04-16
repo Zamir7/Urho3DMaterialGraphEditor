@@ -1,6 +1,4 @@
-﻿namespace Urho3DMaterialEditor.ShaderExpressions
-{
-    public class SamplerCube
-    {
+﻿namespace Urho3DMaterialEditor.ShaderExpressions {
+    public class SamplerCube {
     }
 }

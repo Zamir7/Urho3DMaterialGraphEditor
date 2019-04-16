@@ -4,14 +4,11 @@ using Toe.Scripting;
 using Toe.Scripting.WPF.ViewModels;
 using Urho3DMaterialEditor.ViewModels;
 
-namespace Urho3DMaterialEditor.Model
-{
-    public class DependencyContainer
-    {
+namespace Urho3DMaterialEditor.Model {
+    public class DependencyContainer {
         private readonly IContainer _container;
 
-        public DependencyContainer()
-        {
+        public DependencyContainer() {
             var builder = new ContainerBuilder();
             builder.RegisterInstance(this).AsSelf().SingleInstance();
 
@@ -126,27 +123,23 @@ namespace Urho3DMaterialEditor.Model
             _container = builder.Build();
         }
 
-        public T Resolve<T>()
-        {
+        public T Resolve<T>() {
             return _container.Resolve<T>();
         }
 
-        public T ResolveNamed<T>(string name, params Parameter[] parameters)
-        {
+        public T ResolveNamed<T>(string name, params Parameter[] parameters) {
             return _container.ResolveNamed<T>(name, parameters);
         }
 
-        public bool TryResolveNamed<T>(string name, out T service, params Parameter[] parameters)
-        {
+        public bool TryResolveNamed<T>(string name, out T service, params Parameter[] parameters) {
             object res;
             if (!_container.TryResolveService(new KeyedService(name, typeof(T)), parameters,
-                out res))
-            {
+                out res)) {
                 service = default(T);
                 return false;
             }
 
-            service = (T) res;
+            service = (T)res;
             return true;
         }
     }

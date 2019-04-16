@@ -5,15 +5,12 @@ using Toe.Scripting;
 using Toe.Scripting.WPF.ViewModels;
 using Urho3DMaterialEditor.Model;
 
-namespace Urho3DMaterialEditor.ViewModels
-{
-    public class IntViewModel : NodeViewModel, IDisposable
-    {
+namespace Urho3DMaterialEditor.ViewModels {
+    public class IntViewModel : NodeViewModel, IDisposable {
         private readonly IDisposable _subscription;
         private string _x = "0";
 
-        public IntViewModel(ScriptViewModel script, ScriptNode node) : base(script, node)
-        {
+        public IntViewModel(ScriptViewModel script, ScriptNode node) : base(script, node) {
             CanRename = NodeTypes.IsParameter(node.Type);
 
             _x = node.Value;
@@ -22,19 +19,16 @@ namespace Urho3DMaterialEditor.ViewModels
         }
 
 
-        public string X
-        {
+        public string X {
             get => _x;
             set => RaiseAndSetIfChanged(ref _x, value);
         }
 
-        public void Dispose()
-        {
+        public void Dispose() {
             _subscription.Dispose();
         }
 
-        private void BuildNodeValue()
-        {
+        private void BuildNodeValue() {
             Value = _x;
         }
     }

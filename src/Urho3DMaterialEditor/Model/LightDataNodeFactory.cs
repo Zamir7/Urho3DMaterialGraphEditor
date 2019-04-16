@@ -1,9 +1,7 @@
 ﻿using Toe.Scripting;
 
-namespace Urho3DMaterialEditor.Model
-{
-    public class LightDataNodeFactory : FunctionNodeFactory
-    {
+namespace Urho3DMaterialEditor.Model {
+    public class LightDataNodeFactory : FunctionNodeFactory {
         public const string LightColor = "LightColor";
         public const string LightPos = "LightPos";
         public const string LightDir = "LightDir";
@@ -16,7 +14,7 @@ namespace Urho3DMaterialEditor.Model
         public const string LightRad = "LightRad";
         public const string LightLength = "LightLength";
 
-        public LightDataNodeFactory() : base(NodeTypes.LightData, "Light", new[] {MaterialNodeRegistry.Categories.Data},
+        public LightDataNodeFactory() : base(NodeTypes.LightData, "Light", new[] { MaterialNodeRegistry.Categories.Data },
             new Pin[] { },
             new[]
             {
@@ -31,8 +29,7 @@ namespace Urho3DMaterialEditor.Model
                 new Pin(ShadowSplits, PinTypes.Vec4),
                 new Pin(LightRad, PinTypes.Float),
                 new Pin(LightLength, PinTypes.Float)
-            })
-        {
+            }) {
         }
     }
 }

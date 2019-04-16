@@ -140,7 +140,7 @@ mat3 GetNormalMatrix(mat4 modelMatrix)
             throw new NotImplementedException("Can't generate a default value for type " + pinType);
         }
 
-        
+
         public string GenerateIfDef(NodeHelper<TranslatedMaterialGraph.NodeInfo> node) {
             ++_ifDefCount;
             var ifDefName = "ifdef" + _ifDefCount;

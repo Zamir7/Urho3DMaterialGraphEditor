@@ -4,17 +4,14 @@ using Toe.Scripting;
 using Toe.Scripting.Helpers;
 using Toe.Scripting.WPF.ViewModels;
 
-namespace Urho3DMaterialEditor.Model
-{
-    public class InlineFunctionNodeFactory : INodeFactory
-    {
+namespace Urho3DMaterialEditor.Model {
+    public class InlineFunctionNodeFactory : INodeFactory {
         private readonly Script _script;
         private readonly IList<PinWithConnection> _inputPins = new List<PinWithConnection>();
         private readonly IList<Pin> _outputPins = new List<Pin>();
         private NodeFactoryVisibility _visibility = NodeFactoryVisibility.Visible;
 
-        public InlineFunctionNodeFactory(string name, Script script)
-        {
+        public InlineFunctionNodeFactory(string name, Script script) {
             var segments = name.Split('.');
             Category = segments.Take(segments.Length - 2).Select(_ => FilterName(_)).ToArray();
             Type = Name = FilterName(segments[segments.Length - 2]);
@@ -22,12 +19,10 @@ namespace Urho3DMaterialEditor.Model
             _script.ClearGroups();
 
 
-            var nodesUsedInGraph = new HashSet<int>(_script.Nodes.SelectMany(_ => _.InputPins).Select(_ => _.Connection).Where(_ => _ != null).Select(_=>_.NodeId));
+            var nodesUsedInGraph = new HashSet<int>(_script.Nodes.SelectMany(_ => _.InputPins).Select(_ => _.Connection).Where(_ => _ != null).Select(_ => _.NodeId));
 
-            foreach (var scriptNode in _script.Nodes)
-            {
-                if (NodeTypes.IsConnectorType(scriptNode.Type))
-                {
+            foreach (var scriptNode in _script.Nodes) {
+                if (NodeTypes.IsConnectorType(scriptNode.Type)) {
                     if (scriptNode.InputPins[0].Connection == null)
                         _inputPins.Add(new PinWithConnection(scriptNode.Name, scriptNode.InputPins[0].Type));
                     else if (!nodesUsedInGraph.Contains(scriptNode.Id))
@@ -58,8 +53,7 @@ namespace Urho3DMaterialEditor.Model
 
         public bool HasExitPins { get; }
 
-        public ScriptNode Build()
-        {
+        public ScriptNode Build() {
             var node = new ScriptNode();
             node.Type = Type;
             node.Name = Name;
@@ -72,25 +66,20 @@ namespace Urho3DMaterialEditor.Model
             return node;
         }
 
-        private string FilterName(string s)
-        {
+        private string FilterName(string s) {
             return s.Replace('_', ' ');
         }
 
         public void Inline(ScriptHelper<TranslatedMaterialGraph.NodeInfo> script,
-            NodeHelper<TranslatedMaterialGraph.NodeInfo> scriptNode)
-        {
+            NodeHelper<TranslatedMaterialGraph.NodeInfo> scriptNode) {
             var nodes = script.Merge(_script).ToList();
 
-            foreach (var node in nodes)
-            {
+            foreach (var node in nodes) {
                 node.Id = scriptNode.Id;
-                if (NodeTypes.IsConnectorType(node.Type))
-                {
+                if (NodeTypes.IsConnectorType(node.Type)) {
                     var hasInputConnections = node.InputPins[0].Links.Any();
                     var hasOutputConnections = node.OutputPins[0].Links.Any();
-                    if (!hasOutputConnections && hasInputConnections)
-                    {
+                    if (!hasOutputConnections && hasInputConnections) {
                         var pin = scriptNode.OutputPins[node.Name];
                         if (pin == null)
                             throw new MaterialCompilationException("Output pin " + node.Name + " not found",
@@ -100,9 +89,7 @@ namespace Urho3DMaterialEditor.Model
                                 "Output pin " + node.Name + " mismatch: expected " + node.InputPins[0].Type +
                                 " but found " + pin.Type);
                         script.CopyConnections(pin, node.OutputPins[0]);
-                    }
-                    else if (hasOutputConnections && !hasInputConnections)
-                    {
+                    } else if (hasOutputConnections && !hasInputConnections) {
                         var pin = scriptNode.InputPins[node.Name];
                         if (pin == null)
                             throw new MaterialCompilationException("Input pin " + node.Name + " not found",
@@ -119,23 +106,21 @@ namespace Urho3DMaterialEditor.Model
             script.Nodes.Remove(scriptNode);
         }
 
-        public void Inline(ScriptViewModel script, NodeViewModel node)
-        {
+        public void Inline(ScriptViewModel script, NodeViewModel node) {
             var newScript = script.Script.Clone();
-            var group = new NodeGroup {Name = node.Name};
+            var group = new NodeGroup { Name = node.Name };
             newScript.Groups.Add(group);
             var externalPins = new List<PinWithConnection>();
 
             foreach (var scriptNode in newScript.Nodes)
-            foreach (var pinWithConnection in scriptNode.InputPins)
-                if (pinWithConnection.Connection != null && pinWithConnection.Connection.NodeId == node.Id)
-                    externalPins.Add(pinWithConnection);
+                foreach (var pinWithConnection in scriptNode.InputPins)
+                    if (pinWithConnection.Connection != null && pinWithConnection.Connection.NodeId == node.Id)
+                        externalPins.Add(pinWithConnection);
 
-            var newNodes = newScript.MergeWith(_script, (float) node.Position.X, (float) node.Position.Y);
+            var newNodes = newScript.MergeWith(_script, (float)node.Position.X, (float)node.Position.Y);
             var inputConnectors = new Dictionary<string, ScriptNode>();
             var outputConnectors = new Dictionary<string, ScriptNode>();
-            foreach (var scriptNode in newNodes)
-            {
+            foreach (var scriptNode in newNodes) {
                 scriptNode.GroupId = group.Id;
                 if (NodeTypes.IsConnectorType(scriptNode.Type))
                     if (scriptNode.InputPins[0].Connection == null)
@@ -145,15 +130,13 @@ namespace Urho3DMaterialEditor.Model
             }
 
             foreach (var nodeInputPin in node.Node.InputPins)
-                if (nodeInputPin.Connection != null)
-                {
+                if (nodeInputPin.Connection != null) {
                     ScriptNode connector;
                     if (inputConnectors.TryGetValue(nodeInputPin.Id, out connector))
                         connector.InputPins[0].Connection = nodeInputPin.Connection;
                 }
 
-            foreach (var externalConnection in externalPins)
-            {
+            foreach (var externalConnection in externalPins) {
                 ScriptNode connector;
                 if (outputConnectors.TryGetValue(externalConnection.Connection.PinId, out connector))
                     externalConnection.Connection = new Connection(connector.Id, connector.OutputPins[0].Id);

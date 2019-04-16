@@ -2,18 +2,15 @@
 using System.Linq;
 using Toe.Scripting;
 
-namespace Urho3DMaterialEditor.Model
-{
-    public class FunctionNodeFactory : AbstractNodeFactory
-    {
+namespace Urho3DMaterialEditor.Model {
+    public class FunctionNodeFactory : AbstractNodeFactory {
         private readonly Pin[] _inputs;
         private readonly List<string> _inputTypes;
         private readonly Pin[] _outputs;
         private readonly List<string> _outputTypes;
 
         public FunctionNodeFactory(string type, string name, string[] category, Pin[] inputs,
-            Pin[] outputs) : base(type, name, category)
-        {
+            Pin[] outputs) : base(type, name, category) {
             _inputs = inputs;
             _outputs = outputs;
             _inputTypes = _inputs.Select(_ => _.Type).Distinct().ToList();
@@ -25,38 +22,33 @@ namespace Urho3DMaterialEditor.Model
         public override IEnumerable<string> OutputTypes => _outputTypes;
 
         public static FunctionNodeFactory Function(string type, string name, string category, Pin[] inputs,
-            Pin[] outputs)
-        {
-            return new FunctionNodeFactory(type, name, new[] {NodeTypes.Categories.Functions, category}, inputs,
+            Pin[] outputs) {
+            return new FunctionNodeFactory(type, name, new[] { NodeTypes.Categories.Functions, category }, inputs,
                 outputs);
         }
 
         public static FunctionNodeFactory Function(string type, string name, string category, Pin[] inputs,
-            string outputPinType)
-        {
-            return new FunctionNodeFactory(type, name, new[] {NodeTypes.Categories.Functions, category}, inputs,
-                new[] {new Pin("", outputPinType)});
+            string outputPinType) {
+            return new FunctionNodeFactory(type, name, new[] { NodeTypes.Categories.Functions, category }, inputs,
+                new[] { new Pin("", outputPinType) });
         }
 
         public static FunctionNodeFactory Function(string type, string name, string category, string subCategory,
             Pin[] inputs,
-            Pin[] outputs)
-        {
-            return new FunctionNodeFactory(type, name, new[] {NodeTypes.Categories.Functions, category, subCategory},
+            Pin[] outputs) {
+            return new FunctionNodeFactory(type, name, new[] { NodeTypes.Categories.Functions, category, subCategory },
                 inputs, outputs);
         }
 
         public static FunctionNodeFactory Function(string type, string name, string category, string subCategory,
             Pin[] inputs,
-            string outputPinType)
-        {
-            return new FunctionNodeFactory(type, name, new[] {NodeTypes.Categories.Functions, category, subCategory},
-                inputs, new[] {new Pin("", outputPinType)});
+            string outputPinType) {
+            return new FunctionNodeFactory(type, name, new[] { NodeTypes.Categories.Functions, category, subCategory },
+                inputs, new[] { new Pin("", outputPinType) });
         }
 
 
-        public override ScriptNode Build()
-        {
+        public override ScriptNode Build() {
             var node = new ScriptNode();
             node.Type = Type;
             node.Name = Name;

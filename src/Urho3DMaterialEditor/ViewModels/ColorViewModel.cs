@@ -6,10 +6,8 @@ using Toe.Scripting;
 using Toe.Scripting.WPF.ViewModels;
 using Urho3DMaterialEditor.Model;
 
-namespace Urho3DMaterialEditor.ViewModels
-{
-    public class ColorViewModel : NodeViewModel, IDisposable
-    {
+namespace Urho3DMaterialEditor.ViewModels {
+    public class ColorViewModel : NodeViewModel, IDisposable {
         public static IFormatProvider FormatProvider = CultureInfo.InvariantCulture;
         private readonly IDisposable _subscription;
         private float _a;
@@ -17,21 +15,17 @@ namespace Urho3DMaterialEditor.ViewModels
         private float _g;
         private float _r;
 
-        public ColorViewModel(ScriptViewModel script, ScriptNode node) : base(script, node)
-        {
+        public ColorViewModel(ScriptViewModel script, ScriptNode node) : base(script, node) {
             CanRename = NodeTypes.IsParameter(node.Type);
 
-            var components = (node.Value ?? "").Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries);
-            if (components.Length > 0)
-            {
+            var components = (node.Value ?? "").Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            if (components.Length > 0) {
                 if (!float.TryParse(components[0], NumberStyles.Any, FormatProvider, out _r))
                     _r = 0.0f;
-                if (components.Length > 1)
-                {
+                if (components.Length > 1) {
                     if (!float.TryParse(components[1], NumberStyles.Any, FormatProvider, out _g))
                         _g = 0.0f;
-                    if (components.Length > 2)
-                    {
+                    if (components.Length > 2) {
                         if (!float.TryParse(components[2], NumberStyles.Any, FormatProvider, out _b))
                             _b = 0.0f;
                         if (components.Length > 3)
@@ -46,49 +40,39 @@ namespace Urho3DMaterialEditor.ViewModels
                 .ObserveOnDispatcher().Subscribe(_ => BuildNodeValue());
         }
 
-        public float R
-        {
+        public float R {
             get => _r;
-            set
-            {
+            set {
                 if (RaiseAndSetIfChanged(ref _r, value)) BuildNodeValue();
             }
         }
 
-        public float G
-        {
+        public float G {
             get => _g;
-            set
-            {
+            set {
                 if (RaiseAndSetIfChanged(ref _g, value)) BuildNodeValue();
             }
         }
 
-        public float B
-        {
+        public float B {
             get => _b;
-            set
-            {
+            set {
                 if (RaiseAndSetIfChanged(ref _b, value)) BuildNodeValue();
             }
         }
 
-        public float A
-        {
+        public float A {
             get => _a;
-            set
-            {
+            set {
                 if (RaiseAndSetIfChanged(ref _a, value)) BuildNodeValue();
             }
         }
 
-        public void Dispose()
-        {
+        public void Dispose() {
             _subscription.Dispose();
         }
 
-        private void BuildNodeValue()
-        {
+        private void BuildNodeValue() {
             Value = string.Format(FormatProvider, "{0:G} {1:G} {2:G} {3:G}", R.ToString("0.000"), G.ToString("0.000"),
                 B.ToString("0.000"), A.ToString("0.000")).Replace(',', '.');
         }
