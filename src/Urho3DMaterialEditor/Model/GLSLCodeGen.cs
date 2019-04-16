@@ -6,10 +6,8 @@ using ReactiveUI;
 using Toe.Scripting.Helpers;
 using Urho3DMaterialEditor.Model.Templates;
 
-namespace Urho3DMaterialEditor.Model
-{
-    public class GLSLCodeGen : ICodeGen
-    {
+namespace Urho3DMaterialEditor.Model {
+    public class GLSLCodeGen : ICodeGen {
         public const string GetNormalMatrix = "GetNormalMatrix";
         private readonly IT4Writer _writer;
 
@@ -21,26 +19,24 @@ mat3 GetNormalMatrix(mat4 modelMatrix)
 ";
 
         static public string aloneFunc;
+        static public bool addComments = false;
+
         private Dictionary<string, string> _dynamicFunctions = new Dictionary<string, string>();
 
         private int _ifDefCount;
         public Dictionary<NodeHelper<TranslatedMaterialGraph.NodeInfo>, string> _variables;
 
-        public GLSLCodeGen(IT4Writer writer)
-        {
+        public GLSLCodeGen(IT4Writer writer) {
             _writer = writer;
             _variables = new Dictionary<NodeHelper<TranslatedMaterialGraph.NodeInfo>, string>();
         }
 
-        public IEnumerable<RequiredFunction> GetRequiredFunctions(RequiredFunction requiredFunction)
-        {
+        public IEnumerable<RequiredFunction> GetRequiredFunctions(RequiredFunction requiredFunction) {
             yield break;
         }
 
-        public IEnumerable<RequiredFunction> GetRequiredFunctions(NodeHelper<TranslatedMaterialGraph.NodeInfo> node)
-        {
-            switch (node.Type)
-            {
+        public IEnumerable<RequiredFunction> GetRequiredFunctions(NodeHelper<TranslatedMaterialGraph.NodeInfo> node) {
+            switch (node.Type) {
                 case NodeTypes.Function:
                     _dynamicFunctions.Add(node.Name, BuildFunction(node));
                     yield return new RequiredFunction(node.Name);
@@ -52,8 +48,7 @@ mat3 GetNormalMatrix(mat4 modelMatrix)
             }
         }
 
-        private string BuildFunction(NodeHelper<TranslatedMaterialGraph.NodeInfo> node)
-        {
+        private string BuildFunction(NodeHelper<TranslatedMaterialGraph.NodeInfo> node) {
             var tx = node.OutputPins[0].Type + " " + node.Name + "(" +
                    string.Join(", ", node.InputPins.Select((x, index) => x.Type + " var" + (index + 1).ToString())) + ")"
                    + Environment.NewLine + "{" + Environment.NewLine
@@ -61,28 +56,23 @@ mat3 GetNormalMatrix(mat4 modelMatrix)
                    + "}" + Environment.NewLine;
 
             if (aloneFunc?.Length > 0) tx = aloneFunc + Environment.NewLine + tx;
-            
+
             return tx;
         }
 
         public IEnumerable<NodeHelper<TranslatedMaterialGraph.NodeInfo>> GetRequiredUniforms(
-            RequiredFunction requiredFunction)
-        {
-            switch (requiredFunction.Name)
-            {
+            RequiredFunction requiredFunction) {
+            switch (requiredFunction.Name) {
             }
 
             yield break;
         }
 
         public IEnumerable<NodeHelper<TranslatedMaterialGraph.NodeInfo>> GetRequiredUniforms(
-            NodeHelper<TranslatedMaterialGraph.NodeInfo> node)
-        {
-            switch (node.Type)
-            {
+            NodeHelper<TranslatedMaterialGraph.NodeInfo> node) {
+            switch (node.Type) {
                 case NodeTypes.PositionOutput:
-                    yield return new NodeHelper<TranslatedMaterialGraph.NodeInfo>
-                    {
+                    yield return new NodeHelper<TranslatedMaterialGraph.NodeInfo> {
                         Name = "cClipPlane",
                         Type = PinTypes.Vec4
                     };
@@ -90,10 +80,8 @@ mat3 GetNormalMatrix(mat4 modelMatrix)
             }
         }
 
-        public string GetFunction(RequiredFunction function)
-        {
-            switch (function.Name)
-            {
+        public string GetFunction(RequiredFunction function) {
+            switch (function.Name) {
                 case GetNormalMatrix:
                     return _getNormalMatrix;
                 default:
@@ -104,17 +92,14 @@ mat3 GetNormalMatrix(mat4 modelMatrix)
             }
         }
 
-        public string GenerateCode(PinHelper<TranslatedMaterialGraph.NodeInfo> pin)
-        {
+        public string GenerateCode(PinHelper<TranslatedMaterialGraph.NodeInfo> pin) {
             if (pin.Links.Count == 0)
                 return GenerateDefaultValue(pin.Type);
             return GenerateCode(pin.Links[0].From.Node);
         }
 
-        private string GenerateDefaultValue(string pinType)
-        {
-            switch (pinType)
-            {
+        private string GenerateDefaultValue(string pinType) {
+            switch (pinType) {
                 case PinTypes.Ivec4:
                     return "ivec4(0,0,0,0)";
                 case PinTypes.Ivec3:
@@ -155,8 +140,8 @@ mat3 GetNormalMatrix(mat4 modelMatrix)
             throw new NotImplementedException("Can't generate a default value for type " + pinType);
         }
 
-        public string GenerateIfDef(NodeHelper<TranslatedMaterialGraph.NodeInfo> node)
-        {
+        
+        public string GenerateIfDef(NodeHelper<TranslatedMaterialGraph.NodeInfo> node) {
             ++_ifDefCount;
             var ifDefName = "ifdef" + _ifDefCount;
             var a = GenerateCode(node.InputPins[0]);
@@ -165,22 +150,17 @@ mat3 GetNormalMatrix(mat4 modelMatrix)
             var actualType = GetType(pinTypeName);
 
             {
-                _writer.WriteLine(node.Extra.Define.IfDefExpression,
-                    "// based on node " + node.Name + " " + node.Value + " (type:" + node.Type + ", id:" + node.Id +
-                    ")");
+                if (addComments) _writer.WriteLine(node.Extra.Define.IfDefExpression, "// based on node " + node.Name + " " + node.Value + " (type:" + node.Type + ", id:" + node.Id + ")");
                 _writer.WriteLine(node.Extra.Define.IfDefExpression, actualType + " " + ifDefName + " = " + a + ";");
             }
             {
-                _writer.WriteLine(node.Extra.Define.IfNotDefExpression,
-                    "// based on node " + node.Name + " " + node.Value + " (type:" + node.Type + ", id:" + node.Id +
-                    ")");
+                if (addComments) _writer.WriteLine(node.Extra.Define.IfNotDefExpression, "// based on node " + node.Name + " " + node.Value + " (type:" + node.Type + ", id:" + node.Id + ")");
                 _writer.WriteLine(node.Extra.Define.IfNotDefExpression, actualType + " " + ifDefName + " = " + b + ";");
             }
             return ifDefName;
         }
 
-        public string GenerateVarCode(NodeHelper<TranslatedMaterialGraph.NodeInfo> node)
-        {
+        public string GenerateVarCode(NodeHelper<TranslatedMaterialGraph.NodeInfo> node) {
             string name;
             if (_variables.TryGetValue(node, out name))
                 return name;
@@ -196,17 +176,18 @@ mat3 GetNormalMatrix(mat4 modelMatrix)
             {
                 var arg = GenerateCode(node.InputPins[0]);
                 var def = node.Extra.Define;
-                _writer.WriteLine(def.IsAlways ? null : def.Expression,
+                if (addComments) {
+                    _writer.WriteLine(def.IsAlways ? null : def.Expression,
                     "// based on node " + connectedNode.Name + " " + node.Value + " (type:" + connectedNode.Type +
-                    ", id:" + connectedNode.Id + "), cost estimation: "+node.Extra.EstimatedCost);
+                    ", id:" + connectedNode.Id + "), cost estimation: " + node.Extra.EstimatedCost);
+                }
                 _writer.WriteLine(def.IsAlways ? null : def.Expression,
                     actualType + " " + node.Name + " = " + arg + ";");
             }
             return name;
         }
 
-        public string GenerateCode(NodeHelper<TranslatedMaterialGraph.NodeInfo> node)
-        {
+        public string GenerateCode(NodeHelper<TranslatedMaterialGraph.NodeInfo> node) {
             if (node.Type == NodeTypes.Special.Variable) return GenerateVarCode(node);
             if (node.Extra.Define.IsIfDef) return GenerateIfDef(node);
             //if (node.Type == NodeTypes.Texture2DSampler2DVec2 
@@ -227,8 +208,7 @@ mat3 GetNormalMatrix(mat4 modelMatrix)
 
             if (node.Type == NodeTypes.VertexData) return "i" + node.OutputPins[0].Id;
 
-            if (NodeTypes.IsAttribute(node.Type))
-            {
+            if (NodeTypes.IsAttribute(node.Type)) {
                 if (node.Name == "BlendIndices")
                     return "ivec4(i" + node.Name + ")";
                 return "i" + node.Name;
@@ -240,8 +220,7 @@ mat3 GetNormalMatrix(mat4 modelMatrix)
             string constType;
             if (NodeTypes._constants.TryGetValue(node.Type, out constType))
                 return GetConstantValue(node.Value, constType);
-            switch (node.Type)
-            {
+            switch (node.Type) {
                 case NodeTypes.Function:
                     return node.Name + "(" + string.Join(",", args) + ")";
                 case NodeTypes.Special.Default:
@@ -289,29 +268,26 @@ mat3 GetNormalMatrix(mat4 modelMatrix)
                     throw new InvalidOperationException(
                         "This code shouldn't be executed. All uniforms must be split into individual nodes on preprocessing.");
 
-                case NodeTypes.Special.SetVarying:
-                {
+                case NodeTypes.Special.SetVarying: {
                     var arg = args[0];
                     var actualType = GetType(node.InputPins[0].Type);
                     var varyingType = GetVaryingType(node.InputPins[0].Type);
                     if (actualType != varyingType)
                         arg = varyingType + "(" + arg + ")";
                     var connectedNode = node.InputPins[0].ConnectedPins.FirstOrDefault()?.Node;
-                    if (connectedNode != null)
-                    {
+                    if (connectedNode != null && addComments) {
                         _writer.WriteLine(null,
                             "// based on node " + connectedNode.Name + " " + connectedNode.Value + " (type:" + connectedNode.Type +
                             ", id:" + connectedNode.Id + "), cost estimation: " + connectedNode.Extra.EstimatedCost);
                     }
 
-                    _writer.WriteLine(node.Extra.Define.Expression , "v" + node.Value + " = " + arg + ";");
+                    _writer.WriteLine(node.Extra.Define.Expression, "v" + node.Value + " = " + arg + ";");
                 }
-                    return null;
+                return null;
                 case NodeTypes.Discard:
                     _writer.WriteLine(null, "if (" + args[0] + ") discard;");
                     return null;
-                case NodeTypes.Special.GetVarying:
-                {
+                case NodeTypes.Special.GetVarying: {
                     var arg = "v" + node.Value;
                     var actualType = GetType(node.OutputPins[0].Type);
                     var varyingType = GetVaryingType(node.OutputPins[0].Type);
@@ -419,7 +395,7 @@ mat3 GetNormalMatrix(mat4 modelMatrix)
                 case NodeTypes.LessThanFloatFloat:
                     return GenBinaryOperator("<", args);
                 case NodeTypes.NotBool:
-                    return "!("+args[0]+")";
+                    return "!(" + args[0] + ")";
                 case NodeTypes.EqualFloatFloat:
                     return GenBinaryOperator("==", args);
                 case NodeTypes.NotEqualFloatFloat:
@@ -442,12 +418,10 @@ mat3 GetNormalMatrix(mat4 modelMatrix)
             }
         }
 
-        private string GetConstantValue(string value, string pinType)
-        {
+        private string GetConstantValue(string value, string pinType) {
             if (pinType == PinTypes.Special.Color)
                 pinType = PinTypes.Vec4;
-            switch (pinType)
-            {
+            switch (pinType) {
                 case PinTypes.Float:
                 case PinTypes.Bool:
                 case PinTypes.Int:
@@ -462,7 +436,7 @@ mat3 GetNormalMatrix(mat4 modelMatrix)
                 case PinTypes.Vec3:
                 case PinTypes.Vec4:
                     return pinType + "(" + string.Join(", ",
-                               (value ?? "").Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries)) + ")";
+                               (value ?? "").Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)) + ")";
                 case PinTypes.Mat2:
                     return FormatMat(value, 2);
                 case PinTypes.Mat3:
@@ -474,52 +448,44 @@ mat3 GetNormalMatrix(mat4 modelMatrix)
             throw new NotImplementedException();
         }
 
-        private string FormatMat(string nodeValue, int dimSize)
-        {
-            var vals = (nodeValue ?? "").Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries);
+        private string FormatMat(string nodeValue, int dimSize) {
+            var vals = (nodeValue ?? "").Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             var sb = new StringBuilder();
             sb.Append("mat4(");
             var sep = "";
             for (var c = 0; c < dimSize; ++c)
-            for (var r = 0; r < dimSize; ++r)
-            {
-                sb.Append(sep);
-                sep = ", ";
-                var index = c + r * dimSize;
-                if (index >= vals.Length)
-                    sb.Append("0.0");
-                else
-                    sb.Append(vals[index]);
-            }
+                for (var r = 0; r < dimSize; ++r) {
+                    sb.Append(sep);
+                    sep = ", ";
+                    var index = c + r * dimSize;
+                    if (index >= vals.Length)
+                        sb.Append("0.0");
+                    else
+                        sb.Append(vals[index]);
+                }
 
             sb.Append(")");
             return sb.ToString();
         }
 
-        private string GenBinaryOperator(string p0, IList<string> args)
-        {
+        private string GenBinaryOperator(string p0, IList<string> args) {
             return "(" + args[0] + " " + p0 + " " + args[1] + ")";
         }
 
-        private string GenUnaryOperator(string p0, IList<string> args)
-        {
+        private string GenUnaryOperator(string p0, IList<string> args) {
             return "(" + p0 + " " + args[0] + ")";
         }
 
-        public static string GetType(NodeHelper<TranslatedMaterialGraph.NodeInfo> node)
-        {
+        public static string GetType(NodeHelper<TranslatedMaterialGraph.NodeInfo> node) {
             return GetType(node.OutputPins.First());
         }
 
-        public static string GetType(PinHelper<TranslatedMaterialGraph.NodeInfo> pin)
-        {
+        public static string GetType(PinHelper<TranslatedMaterialGraph.NodeInfo> pin) {
             return GetType(pin.Type);
         }
 
-        public static string GetType(string pinTypeName)
-        {
-            switch (pinTypeName)
-            {
+        public static string GetType(string pinTypeName) {
+            switch (pinTypeName) {
                 case PinTypes.Sampler2D:
                     return "sampler2D";
                 //case PinTypes.Sampler3D:
@@ -541,10 +507,8 @@ mat3 GetNormalMatrix(mat4 modelMatrix)
             return pinTypeName;
         }
 
-        public static string GetVaryingType(string pinTypeName)
-        {
-            switch (pinTypeName)
-            {
+        public static string GetVaryingType(string pinTypeName) {
+            switch (pinTypeName) {
                 case PinTypes.Bool:
                     return PinTypes.Float;
                 case PinTypes.Bvec2:
@@ -564,10 +528,8 @@ mat3 GetNormalMatrix(mat4 modelMatrix)
             return GetType(pinTypeName);
         }
 
-        public static object GetArraySize(string type)
-        {
-            switch (type)
-            {
+        public static object GetArraySize(string type) {
+            switch (type) {
                 case PinTypes.Skin:
                     return "[MAXBONES*3]";
                 case PinTypes.VertexLights:
@@ -579,10 +541,8 @@ mat3 GetNormalMatrix(mat4 modelMatrix)
             return "";
         }
 
-        public static string GetSamplerName(NodeHelper<TranslatedMaterialGraph.NodeInfo> node)
-        {
-            switch (node.Name)
-            {
+        public static string GetSamplerName(NodeHelper<TranslatedMaterialGraph.NodeInfo> node) {
+            switch (node.Name) {
                 case SamplerNodeFactory.Diffuse:
                     return "sDiffMap";
                 case SamplerNodeFactory.DiffuseCubeMap:

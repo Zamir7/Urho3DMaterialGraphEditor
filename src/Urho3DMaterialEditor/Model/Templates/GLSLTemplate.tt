@@ -4,6 +4,8 @@
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
 
+precision highp float;
+
 #ifndef GL3
 #define sampleShadow(map,pos) shadow2DProj(map,pos).r
 #else

@@ -71,7 +71,7 @@ namespace Urho3DMaterialEditor
             //MessageBox.Show(exception.Message, "Urho Exception", MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
-        private void ToggleButton_Click(object sender, RoutedEventArgs e) {
+        private void ToggleButton_Click(object sender, RoutedEventArgs e) {// show shader text
             bool? isT = (sender as ToggleButton).IsChecked;
             if (isT==true) rowSh.Height = new GridLength(rowMn.ActualHeight/2); else rowSh.Height = new GridLength(0);
         }
@@ -83,6 +83,10 @@ namespace Urho3DMaterialEditor
 
         private void MenuItem_Click(object sender, RoutedEventArgs e) {
             if(Status.ToolTip!=null)Clipboard.SetText(Status.ToolTip.ToString()); ;
+        }
+
+        private void ToggleButton_Click_1(object sender, RoutedEventArgs e) { //comments to shader on/off
+            GLSLCodeGen.addComments = !GLSLCodeGen.addComments;
         }
     }
 }

@@ -100,9 +100,10 @@
             </MenuItem>
         </Menu>
         <StackPanel Grid.Row="1" Orientation="Horizontal">
-            <Button MinWidth="24" MinHeight="24" Margin="2" Command="{Binding ScriptViewModel.UndoCommand}">&#x21BA;</Button>
-            <Button MinWidth="24" MinHeight="24" Margin="2" Command="{Binding ScriptViewModel.RedoCommand}">&#x21BB;</Button>
-            <ToggleButton MinWidth="24" MinHeight="24" Margin="2" Content="txt" IsChecked="False" Click="ToggleButton_Click"/>
+            <Button MinWidth="24" MinHeight="24" Margin="2" Background="Transparent" Command="{Binding ScriptViewModel.UndoCommand}">&#x21BA;</Button>
+            <Button MinWidth="24" MinHeight="24" Margin="2" Background="Transparent" Command="{Binding ScriptViewModel.RedoCommand}">&#x21BB;</Button>
+            <ToggleButton MinWidth="24" MinHeight="24" Margin="2" Content="txt" ToolTip="Show shader text" IsChecked="False" Click="ToggleButton_Click" Background="Transparent"/> 
+            <ToggleButton MinWidth="24" MinHeight="24" Margin="2" Content="//" ToolTip="Comments in shader" IsChecked="False" Click="ToggleButton_Click_1" Background="Transparent"/>
             <!--<ToggleButton x:Name="enable" MaxHeight="24" BorderThickness="0" Background="Transparent"  IsChecked="True" MaxWidth="24" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="4,4,4,4">
                 <ToggleButton.Style>
                     <Style TargetType="ToggleButton">
