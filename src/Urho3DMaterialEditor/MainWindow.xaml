@@ -99,7 +99,7 @@
                 <MenuItem Header="Run Performance Test" Command="{Binding TestPerformanceCommand}" />
             </MenuItem>
         </Menu>
-        <StackPanel Grid.Row="1" Orientation="Horizontal">
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Background="Transparent">
             <Button MinWidth="24" MinHeight="24" Margin="2" Background="Transparent" Command="{Binding ScriptViewModel.UndoCommand}">&#x21BA;</Button>
             <Button MinWidth="24" MinHeight="24" Margin="2" Background="Transparent" Command="{Binding ScriptViewModel.RedoCommand}">&#x21BB;</Button>
             <ToggleButton MinWidth="24" MinHeight="24" Margin="2" Content="txt" ToolTip="Show shader text" IsChecked="False" Click="ToggleButton_Click" Background="Transparent"/> 
@@ -204,16 +204,16 @@
                 </Grid>
 
             </Grid>
-            <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+            <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
             <Grid Grid.Column="2">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="Distance = "  VerticalAlignment="Center"/>
-                    <TextBox BorderThickness="0" IsReadOnly="True"  VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Background="Black">
+                    <TextBlock Text="Distance = "  VerticalAlignment="Center" Foreground="AliceBlue"/>
+                    <TextBox BorderThickness="0" IsReadOnly="True"  VerticalAlignment="Center" Background="Transparent" Foreground="LightBlue">
                         <TextBox.Text>
                             <Binding Path="CameraDistance" StringFormat="0.000" />
                         </TextBox.Text>
